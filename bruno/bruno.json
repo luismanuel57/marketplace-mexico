@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Tianguis Digital",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
