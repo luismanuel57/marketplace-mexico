@@ -9,13 +9,25 @@ Coleccion con todos los endpoints de la API para probar con [Bruno](https://www.
 3. Selecciona la carpeta `bruno/` de este proyecto.
 4. La coleccion aparece con sus 9 carpetas ordenadas.
 
-## Configuracion del token
+## Configuracion del environment
 
-La coleccion usa la variable `{{token}}` para los endpoints protegidos:
+La coleccion usa variables del **environment activo** (carpeta `bruno/environments/`):
 
-1. Ejecuta `02_Auth -> 03_Login_Admin` (o `02_Login_Comprador`).
-2. Copia el `token` de la respuesta.
-3. En Bruno: `Collections -> Tianguis Digital -> ...` edita las variables de coleccion y pega el token en `token`.
+1. Abre la coleccion en Bruno.
+2. En la barra superior, selecciona el environment **Local** (desplegable junto al boton de run).
+3. Ejecuta `02_Auth -> 02_Login_Comprador` o `03_Login_Admin`.
+4. El script post-response guarda automaticamente el `token` devuelto en la variable de environment `token`. No necesitas copiar nada.
+
+El environment `environments/Local.bru` define:
+
+```bru
+vars {
+  apiUrl: http://localhost:3000/api
+  token: ""
+}
+```
+
+> Nota: si el environment no esta seleccionado, los endpoints protegidos daran 401. El login y el guardado del token requieren el environment activo. La precedencia en Bruno es: request > environment > collection.
 
 ## Orden sugerido de pruebas
 
