@@ -47,10 +47,11 @@ const tokenComprador = login.datos.token;
 const loginMal = await peticion('POST', '/auth/login', { correo: 'comprador@tianguisdigital.mx', contrasena: 'incorrecta' });
 informar('Login con contraseña incorrecta -> 401', loginMal, 401);
 
-const registro = await peticion('POST', '/auth/registro', { nombre: 'Prueba', apellido_paterno: 'Test', correo: 'prueba@test.mx', contrasena: 'secreto123' });
+const correoPrueba = `prueba${Date.now()}@test.mx`;
+const registro = await peticion('POST', '/auth/registro', { nombre: 'Prueba', apellido_paterno: 'Test', correo: correoPrueba, contrasena: 'secreto123' });
 informar('POST /api/auth/registro', registro, 201);
 
-const registroDup = await peticion('POST', '/auth/registro', { nombre: 'X', apellido_paterno: 'Y', correo: 'prueba@test.mx', contrasena: 'secreto123' });
+const registroDup = await peticion('POST', '/auth/registro', { nombre: 'X', apellido_paterno: 'Y', correo: correoPrueba, contrasena: 'secreto123' });
 informar('Registro con correo duplicado -> 409', registroDup, 409);
 
 const bolsa = await peticion('GET', '/bolsa', null, tokenComprador);
