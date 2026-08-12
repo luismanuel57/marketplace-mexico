@@ -1,0 +1,32 @@
+meta {
+  name: Crear domicilio
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{apiUrl}}/domicilios
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "nombre": "Mi casa",
+    "calle": "Av. Mexico",
+    "numero": "100",
+    "colonia": "Centro",
+    "codigo_postal": "44100",
+    "municipio": "Guadalajara",
+    "estado": "Jalisco",
+    "telefono_contacto": "3331112233"
+  }
+}

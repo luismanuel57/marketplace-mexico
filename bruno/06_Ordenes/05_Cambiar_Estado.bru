@@ -1,0 +1,25 @@
+meta {
+  name: Cambiar estado del pedido (admin)
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{apiUrl}}/ordenes/1/estado
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "estado": "confirmado"
+  }
+}

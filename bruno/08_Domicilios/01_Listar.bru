@@ -1,0 +1,15 @@
+meta {
+  name: Listar mis domicilios
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{apiUrl}}/domicilios
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

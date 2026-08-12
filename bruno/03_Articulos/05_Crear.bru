@@ -1,0 +1,30 @@
+meta {
+  name: Crear articulo (admin)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{apiUrl}}/articulos
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "id_categoria": 1,
+    "nombre": "Prueba Bruno",
+    "descripcion": "Producto creado desde Bruno",
+    "precio_mxn": 500,
+    "existencias": 10,
+    "marca": "Test"
+  }
+}

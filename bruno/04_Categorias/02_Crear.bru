@@ -1,0 +1,26 @@
+meta {
+  name: Crear categoria (admin)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{apiUrl}}/categorias
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "nombre": "Jardineria",
+    "descripcion": "Plantas y articulos de jardin"
+  }
+}

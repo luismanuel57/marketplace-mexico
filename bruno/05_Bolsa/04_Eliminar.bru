@@ -1,0 +1,15 @@
+meta {
+  name: Eliminar producto de la bolsa
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{apiUrl}}/bolsa/articulos/1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

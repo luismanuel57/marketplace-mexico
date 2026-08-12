@@ -1,0 +1,15 @@
+meta {
+  name: Ver bolsa
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{apiUrl}}/bolsa
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

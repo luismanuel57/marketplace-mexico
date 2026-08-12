@@ -1,0 +1,15 @@
+meta {
+  name: Todos los pedidos (admin)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{apiUrl}}/ordenes/todas
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

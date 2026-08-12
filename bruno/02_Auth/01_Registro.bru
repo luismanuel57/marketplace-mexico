@@ -1,0 +1,26 @@
+meta {
+  name: Registro de usuario
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{apiUrl}}/auth/registro
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "nombre": "Ana",
+    "apellido_paterno": "Ramirez",
+    "apellido_materno": "Perez",
+    "correo": "ana@test.mx",
+    "telefono": "3334567890",
+    "contrasena": "secreto123"
+  }
+}

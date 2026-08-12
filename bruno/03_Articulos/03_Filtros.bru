@@ -1,0 +1,11 @@
+meta {
+  name: Filtros combinados
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{apiUrl}}/articulos?categoria=Computacion&precio_min=300&precio_max=15000&disponible=true
+  body: none
+  auth: none
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Login con contrasena incorrecta (401)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{apiUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "correo": "comprador@tianguisdigital.mx",
+    "contrasena": "incorrecta"
+  }
+}

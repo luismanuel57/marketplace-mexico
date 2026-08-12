@@ -1,0 +1,23 @@
+meta {
+  name: Crear articulo sin token (401)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{apiUrl}}/articulos
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id_categoria": 1,
+    "nombre": "Sin token",
+    "precio_mxn": 100
+  }
+}

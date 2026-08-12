@@ -1,0 +1,25 @@
+meta {
+  name: Modificar categoria (admin)
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{apiUrl}}/categorias/1
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "descripcion": "Categoria actualizada desde Bruno"
+  }
+}

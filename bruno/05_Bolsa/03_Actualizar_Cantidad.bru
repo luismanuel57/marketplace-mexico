@@ -1,0 +1,25 @@
+meta {
+  name: Actualizar cantidad
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{apiUrl}}/bolsa/articulos/1
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "cantidad": 2
+  }
+}
