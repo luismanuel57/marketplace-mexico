@@ -1,0 +1,15 @@
+# Dependencias
+node_modules/
+
+# Configuracion sensible (nunca subir credenciales)
+.env
+.env.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
