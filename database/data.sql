@@ -76,3 +76,26 @@ VALUES
   ((SELECT id_cliente FROM clientes WHERE correo = 'comprador@tianguisdigital.mx'),
    'María García López', 'Av. Chapultepec', '123', 'Centro', '44100',
    'Guadalajara', 'Jalisco', '3312345678');
+
+-- Bolsa (carrito) del comprador -------------------------------
+INSERT INTO bolsa (id_cliente, estatus) VALUES
+  ((SELECT id_cliente FROM clientes WHERE correo = 'comprador@tianguisdigital.mx'), 'convertida');
+
+INSERT INTO bolsa_detalle (id_bolsa, id_articulo, cantidad, precio_unitario)
+SELECT b.id_bolsa, a.id_articulo, x.cantidad, a.precio_mxn
+FROM (VALUES ('Laptop Lenovo IdeaPad', 1), ('Mouse Logitech M185', 2)) AS x(nombre, cantidad)
+JOIN articulos AS a ON a.nombre = x.nombre
+JOIN bolsa AS b ON b.id_cliente = (SELECT id_cliente FROM clientes WHERE correo = 'comprador@tianguisdigital.mx');
+
+-- Pedido de ejemplo (ORD-2026-0001) ----------------------------
+INSERT INTO ordenes (folio_orden, id_cliente, id_domicilio, subtotal, envio, total, estado) VALUES
+  ('ORD-2026-0001',
+   (SELECT id_cliente FROM clientes WHERE correo = 'comprador@tianguisdigital.mx'),
+   (SELECT id_domicilio FROM domicilios LIMIT 1),
+   15697.00, 199.00, 15896.00, 'pendiente');
+
+INSERT INTO orden_detalle (id_orden, id_articulo, cantidad, precio_unitario, subtotal)
+SELECT o.id_orden, a.id_articulo, x.cantidad, a.precio_mxn, x.cantidad * a.precio_mxn
+FROM (VALUES ('Laptop Lenovo IdeaPad', 1), ('Mouse Logitech M185', 2)) AS x(nombre, cantidad)
+JOIN articulos AS a ON a.nombre = x.nombre
+JOIN ordenes AS o ON o.folio_orden = 'ORD-2026-0001';
