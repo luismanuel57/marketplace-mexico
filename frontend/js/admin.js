@@ -8,18 +8,18 @@ async function verificarAdmin() {
       <div class="tarjeta p-5 text-center">
         <i class="bi bi-shield-lock fs-1 text-muted"></i>
         <p class="text-muted mt-3">Esta sección es solo para administradores.</p>
-        <a class="btn-negro mt-2" href="login.html">Iniciar sesión</a>
+        <a class="btn-negro mt-2" href="login.html"><i class="bi bi-box-arrow-in-right me-1"></i>Iniciar sesión</a>
       </div>`;
     return;
   }
 
   contenedor.innerHTML = `
-    <div class="d-flex gap-2 mb-4">
-      <button type="button" class="pestana-auth activa" data-vista="vista-articulos">Artículos</button>
-      <button type="button" class="pestana-auth" data-vista="vista-pedidos">Pedidos</button>
-      <button type="button" class="pestana-auth" data-vista="vista-clientes">Clientes</button>
-      <button type="button" class="pestana-auth" data-vista="vista-vendedores">Vendedores</button>
-      <button type="button" class="pestana-auth" data-vista="vista-bitacora">Bitácora</button>
+    <div class="d-flex gap-2 mb-4 flex-wrap">
+      <button type="button" class="pestana-auth activa" data-vista="vista-articulos"><i class="bi bi-box-seam me-1"></i>Artículos</button>
+      <button type="button" class="pestana-auth" data-vista="vista-pedidos"><i class="bi bi-receipt me-1"></i>Pedidos</button>
+      <button type="button" class="pestana-auth" data-vista="vista-clientes"><i class="bi bi-people me-1"></i>Clientes</button>
+      <button type="button" class="pestana-auth" data-vista="vista-vendedores"><i class="bi bi-shop me-1"></i>Vendedores</button>
+      <button type="button" class="pestana-auth" data-vista="vista-bitacora"><i class="bi bi-journal-text me-1"></i>Bitácora</button>
     </div>
     <div id="vista-articulos"></div>
     <div id="vista-pedidos" class="d-none"></div>
@@ -58,8 +58,8 @@ async function cargarArticulosAdmin() {
     const articulos = await peticion('/articulos');
     contenedor.innerHTML = `
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="h5 mb-0">Artículos</h2>
-        <button type="button" class="btn-negro btn-sm" id="btn-nuevo-articulo">+ Nuevo artículo</button>
+        <h2 class="h5 mb-0"><i class="bi bi-box-seam icono-acento me-1"></i>Artículos</h2>
+        <button type="button" class="btn-negro btn-sm" id="btn-nuevo-articulo"><i class="bi bi-plus-circle me-1"></i>Nuevo artículo</button>
       </div>
       <div class="tarjeta p-0">
         <div class="table-responsive">
@@ -81,17 +81,17 @@ async function cargarArticulosAdmin() {
                   <td>${a.categoria}</td>
                   <td>${formatearPrecio(a.precio_mxn)}</td>
                   <td>${a.existencias}</td>
-                  <td><span class="estado-pastilla">${a.estatus}</span></td>
+                  <td><span class="estado-pastilla ${claseEstado(a.estatus)}"><i class="bi ${iconoEstado(a.estatus)} me-1"></i>${a.estatus}</span></td>
                   <td>
-                    <span class="estado-pastilla ${a.destacado ? 'destacado-si' : ''}">${a.destacado ? 'Sí' : 'No'}</span>
+                    <span class="estado-pastilla ${a.destacado ? 'destacado-si' : ''}"><i class="bi ${a.destacado ? 'bi-star-fill' : 'bi-star'} me-1"></i>${a.destacado ? 'Sí' : 'No'}</span>
                     <button type="button" class="btn-ghost btn-sm ms-1 destacar-articulo" data-id="${a.id_articulo}" data-destacado="${a.destacado}">
-                      ${a.destacado ? 'Quitar' : 'Destacar'}
+                      <i class="bi ${a.destacado ? 'bi-star' : 'bi-star-fill'} me-1"></i>${a.destacado ? 'Quitar' : 'Destacar'}
                     </button>
                   </td>
                   <td>
-                    <button type="button" class="btn-ghost btn-sm editar-articulo" data-id="${a.id_articulo}">Editar</button>
+                    <button type="button" class="btn-ghost btn-sm editar-articulo" data-id="${a.id_articulo}"><i class="bi bi-pencil-square me-1"></i>Editar</button>
                     ${a.estatus === 'activo'
-                      ? `<button type="button" class="btn-ghost btn-sm desactivar-articulo" data-id="${a.id_articulo}">Desactivar</button>`
+                      ? `<button type="button" class="btn-ghost btn-sm desactivar-articulo" data-id="${a.id_articulo}"><i class="bi bi-toggle-off me-1"></i>Desactivar</button>`
                       : ''}
                   </td>
                 </tr>`).join('')}
@@ -199,7 +199,7 @@ async function mostrarFormularioArticulo(articulo = null) {
     </div>`;
   overlay.querySelector('.modal-sistema-acciones').innerHTML = `
     <button type="button" class="btn-ghost btn-sm px-4 modal-cancelar">Cancelar</button>
-    <button type="button" class="btn-negro btn-sm px-4 modal-guardar">Guardar</button>`;
+    <button type="button" class="btn-negro btn-sm px-4 modal-guardar"><i class="bi bi-check-lg me-1"></i>Guardar</button>`;
   if (datos.imagen_url) {
     const preview = overlay.querySelector('#art-imagen-preview');
     preview.src = datos.imagen_url;
@@ -267,7 +267,7 @@ async function cargarPedidosAdmin() {
     const pedidos = await peticion('/ordenes/todas');
     const estados = ['pendiente', 'confirmado', 'preparando', 'enviado', 'entregado', 'cancelado'];
     contenedor.innerHTML = `
-      <h2 class="h5 mb-3">Pedidos</h2>
+      <h2 class="h5 mb-3"><i class="bi bi-receipt icono-acento me-1"></i>Pedidos</h2>
       <div class="tarjeta p-0">
         <div class="table-responsive">
           <table class="table table-hover mb-0">
@@ -281,7 +281,7 @@ async function cargarPedidosAdmin() {
                   <td>${p.cliente}</td>
                   <td>${new Date(p.fecha_orden).toLocaleDateString('es-MX')}</td>
                   <td>${formatearPrecio(p.total)}</td>
-                  <td><span class="estado-pastilla">${formatearEstado(p.estado)}</span></td>
+                  <td><span class="estado-pastilla ${claseEstado(p.estado)}"><i class="bi ${iconoEstado(p.estado)} me-1"></i>${formatearEstado(p.estado)}</span></td>
                   <td>
                     <select class="form-select form-select-sm cambiar-estado" data-id="${p.id_orden}" style="width:auto;">
                       ${estados.map((e) => `<option value="${e}" ${e === p.estado ? 'selected' : ''}>${formatearEstado(e)}</option>`).join('')}
@@ -317,8 +317,8 @@ async function cargarClientesAdmin() {
     const clientes = await peticion('/clientes');
     contenedor.innerHTML = `
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="h5 mb-0">Clientes</h2>
-        <button type="button" class="btn-negro btn-sm" id="btn-crear-cuenta">+ Crear cuenta</button>
+        <h2 class="h5 mb-0"><i class="bi bi-people icono-acento me-1"></i>Clientes</h2>
+        <button type="button" class="btn-negro btn-sm" id="btn-crear-cuenta"><i class="bi bi-person-plus me-1"></i>Crear cuenta</button>
       </div>
       <div class="tarjeta p-0">
         <div class="table-responsive">
@@ -399,7 +399,7 @@ function mostrarModalCrearCuenta() {
     </div>`;
   overlay.querySelector('.modal-sistema-acciones').innerHTML = `
     <button type="button" class="btn-ghost btn-sm px-4 modal-cancelar">Cancelar</button>
-    <button type="button" class="btn-negro btn-sm px-4 modal-guardar">Crear cuenta</button>`;
+    <button type="button" class="btn-negro btn-sm px-4 modal-guardar"><i class="bi bi-person-plus me-1"></i>Crear cuenta</button>`;
   overlay.classList.add('visible');
 
   const REGEX_SOLO_LETRAS = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü' -]{1,40}$/;
@@ -472,7 +472,7 @@ async function cargarVendedoresAdmin() {
   try {
     const vendedores = await peticion('/vendedores');
     contenedor.innerHTML = `
-      <h2 class="h5 mb-3">Vendedores</h2>
+      <h2 class="h5 mb-3"><i class="bi bi-shop icono-acento me-1"></i>Vendedores</h2>
       <div class="tarjeta p-0">
         <div class="table-responsive">
           <table class="table table-hover mb-0">
@@ -488,7 +488,7 @@ async function cargarVendedoresAdmin() {
                   <td>${v.total_articulos}</td>
                   <td>
                     <button type="button" class="btn-ghost btn-sm ver-articulos-vendedor" data-id="${v.id_cliente}">
-                      Ver artículos
+                      <i class="bi bi-eye me-1"></i>Ver artículos
                     </button>
                   </td>
                 </tr>
@@ -517,7 +517,7 @@ async function cargarVendedoresAdmin() {
               <td>${a.categoria}</td>
               <td>${formatearPrecio(a.precio_mxn)}</td>
               <td>${a.existencias}</td>
-              <td><span class="estado-pastilla">${a.estatus}</span></td>
+              <td><span class="estado-pastilla ${claseEstado(a.estatus)}"><i class="bi ${iconoEstado(a.estatus)} me-1"></i>${a.estatus}</span></td>
             </tr>`).join('');
           fila.querySelector('.articulos-vendedor-carga').outerHTML = `
             <table class="table table-sm table-bordered mb-0">
@@ -553,7 +553,7 @@ async function cargarBitacoraAdmin(filtros = {}) {
 
     contenedor.innerHTML = `
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="h5 mb-0">Bitácora de actividad</h2>
+        <h2 class="h5 mb-0"><i class="bi bi-journal-text icono-acento me-1"></i>Bitácora de actividad</h2>
       </div>
       <div class="d-flex gap-2 mb-3">
         <input type="text" class="form-control form-control-sm" id="filtro-bitacora-correo"

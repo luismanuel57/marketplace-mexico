@@ -1,4 +1,5 @@
 :root {
+  /* Escala base: blanco/negro */
   --negro: #0a0a0a;
   --negro-suave: #141414;
   --gris-950: #1a1a1a;
@@ -10,6 +11,24 @@
   --blanco-humo: #f5f5f5;
   --borde: #e8e8e8;
   --fuente: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  /* Acento tianguis: ámbar/dorado */
+  --acento: #f59e0b;
+  --acento-hover: #d97706;
+  --acento-texto: #b45309;
+  --acento-claro: #fffbeb;
+  --acento-claro-2: #fef3c7;
+
+  /* Estados */
+  --exito: #16a34a;
+  --exito-oscuro: #15803d;
+  --exito-claro: #f0fdf4;
+  --error: #dc2626;
+  --error-oscuro: #b91c1c;
+  --error-claro: #fef2f2;
+  --info: #2563eb;
+  --info-oscuro: #1d4ed8;
+  --info-claro: #eff6ff;
 }
 
 * { box-sizing: border-box; }
@@ -60,11 +79,12 @@ a { color: inherit; text-decoration: none; }
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background-color: var(--negro);
-  color: var(--blanco);
+  background-color: var(--acento);
+  color: var(--negro);
   font-weight: 700;
   font-size: 0.9rem;
   letter-spacing: 0.05em;
+  border: 1px solid var(--acento-hover);
 }
 
 .navbar-nav .nav-link {
@@ -76,11 +96,16 @@ a { color: inherit; text-decoration: none; }
 
 .navbar-nav .nav-link:hover,
 .navbar-nav .nav-link.active {
-  color: var(--gris-600);
+  color: var(--acento-texto);
 }
 
 .navbar-toggler {
   border-color: var(--borde);
+}
+
+.navbar-toggler:focus {
+  box-shadow: none;
+  border-color: var(--acento);
 }
 
 .btn-bolsa {
@@ -92,16 +117,17 @@ a { color: inherit; text-decoration: none; }
 }
 
 .btn-bolsa:hover {
-  background-color: var(--negro);
-  color: var(--blanco);
+  background-color: var(--acento);
+  border-color: var(--acento);
+  color: var(--negro);
 }
 
 .contador-bolsa {
   position: absolute;
   top: -6px;
   right: -6px;
-  background-color: var(--negro);
-  color: var(--blanco);
+  background-color: var(--acento);
+  color: var(--negro);
   border-radius: 999px;
   font-size: 0.65rem;
   min-width: 18px;
@@ -114,18 +140,24 @@ a { color: inherit; text-decoration: none; }
 
 /* ---------- Botones ---------- */
 .btn-negro {
-  background-color: var(--negro);
-  color: var(--blanco);
-  border: 1px solid var(--negro);
+  background-color: var(--acento);
+  color: var(--negro);
+  border: 1px solid var(--acento);
   border-radius: 999px;
   padding: 0.55rem 1.6rem;
   font-weight: 600;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .btn-negro:hover {
-  background-color: var(--gris-800);
-  color: var(--blanco);
+  background-color: var(--acento-hover);
+  border-color: var(--acento-hover);
+  color: var(--negro);
+}
+
+.btn-negro:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 0.25rem rgba(245, 158, 11, 0.35);
 }
 
 .btn-contorno {
@@ -135,12 +167,13 @@ a { color: inherit; text-decoration: none; }
   border-radius: 999px;
   padding: 0.55rem 1.6rem;
   font-weight: 600;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .btn-contorno:hover {
-  background-color: var(--negro);
-  color: var(--blanco);
+  background-color: var(--acento-claro);
+  border-color: var(--acento);
+  color: var(--acento-texto);
 }
 
 .btn-ghost {
@@ -153,13 +186,13 @@ a { color: inherit; text-decoration: none; }
 }
 
 .btn-ghost:hover {
-  border-color: var(--negro);
-  color: var(--negro);
+  border-color: var(--acento);
+  color: var(--acento-texto);
 }
 
 /* ---------- Hero ---------- */
 .hero {
-  background-color: var(--blanco);
+  background: linear-gradient(180deg, var(--acento-claro-2) 0%, var(--blanco) 100%);
   border-bottom: 1px solid var(--borde);
 }
 
@@ -169,7 +202,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 .texto-elegante {
-  color: var(--gris-600);
+  color: var(--acento-texto);
   font-weight: 500;
 }
 
@@ -184,8 +217,15 @@ a { color: inherit; text-decoration: none; }
 }
 
 .buscador-hero .form-control:focus {
-  border-color: var(--negro);
-  box-shadow: none;
+  border-color: var(--acento);
+  box-shadow: 0 0 0 0.25rem rgba(245, 158, 11, 0.18);
+}
+
+/* ---------- Formularios (foco con acento en vez del azul de Bootstrap) ---------- */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--acento);
+  box-shadow: 0 0 0 0.25rem rgba(245, 158, 11, 0.18);
 }
 
 /* ---------- Tarjetas ---------- */
@@ -198,8 +238,8 @@ a { color: inherit; text-decoration: none; }
 }
 
 .tarjeta:hover {
-  border-color: var(--negro);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  border-color: var(--acento);
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.12);
   transform: translateY(-2px);
 }
 
@@ -220,6 +260,7 @@ a { color: inherit; text-decoration: none; }
 .tarjeta-precio {
   font-weight: 700;
   font-size: 1.1rem;
+  color: var(--acento-texto);
 }
 
 .tarjeta-badge {
@@ -252,18 +293,18 @@ a { color: inherit; text-decoration: none; }
 
 .campo-form .form-control:focus,
 .campo-form .form-select:focus {
-  border-color: var(--negro);
-  box-shadow: none;
+  border-color: var(--acento);
+  box-shadow: 0 0 0 0.25rem rgba(245, 158, 11, 0.18);
 }
 
 .campo-form .form-control.invalido,
 .campo-form .form-select.invalido {
-  border-color: #c0392b;
+  border-color: var(--error);
 }
 
 .mensaje-error {
   font-size: 0.78rem;
-  color: #c0392b;
+  color: var(--error-oscuro);
   margin-top: 0.25rem;
   display: none;
 }
@@ -292,9 +333,22 @@ a { color: inherit; text-decoration: none; }
   font-size: 0.95rem;
 }
 
+.pestana-auth:hover {
+  color: var(--acento-texto);
+}
+
 .pestana-auth.activa {
   color: var(--negro);
-  border-bottom-color: var(--negro);
+  border-bottom-color: var(--acento);
+}
+
+.pestana-auth-enlace {
+  color: var(--acento-texto);
+  font-weight: 600;
+}
+
+.pestana-auth-enlace:hover {
+  color: var(--acento-hover);
 }
 
 /* ---------- Modal del sistema ---------- */
@@ -337,9 +391,9 @@ a { color: inherit; text-decoration: none; }
   margin-bottom: 1rem;
 }
 
-.modal-sistema-icone.exito { background-color: #eafaf1; color: #1e8e3e; }
-.modal-sistema-icone.error { background-color: #fdf0ef; color: #c0392b; }
-.modal-sistema-icone.info { background-color: var(--blanco-humo); color: var(--negro); }
+.modal-sistema-icone.exito { background-color: var(--exito-claro); color: var(--exito-oscuro); }
+.modal-sistema-icone.error { background-color: var(--error-claro); color: var(--error-oscuro); }
+.modal-sistema-icone.info { background-color: var(--info-claro); color: var(--info-oscuro); }
 
 .modal-sistema-titulo {
   font-weight: 700;
@@ -362,11 +416,24 @@ a { color: inherit; text-decoration: none; }
   object-fit: cover;
 }
 
+.breadcrumb a {
+  color: var(--acento-texto);
+}
+
+.breadcrumb a:hover {
+  color: var(--acento-hover);
+}
+
 /* ---------- Pie de página ---------- */
 .pie-pagina {
   background-color: var(--negro);
   color: var(--gris-400);
   font-size: 0.85rem;
+  border-top: 3px solid var(--acento);
+}
+
+.pie-pagina i {
+  color: var(--acento);
 }
 
 /* ---------- Utilidades ---------- */
@@ -380,7 +447,41 @@ a { color: inherit; text-decoration: none; }
 }
 
 .estado-pastilla.destacado-si {
-  background-color: var(--negro);
-  border-color: var(--negro);
-  color: var(--blanco);
+  background-color: var(--acento);
+  border-color: var(--acento);
+  color: var(--negro);
+}
+
+.estado-pastilla.estado-exito {
+  background-color: var(--exito-claro);
+  border-color: var(--exito);
+  color: var(--exito-oscuro);
+}
+
+.estado-pastilla.estado-error {
+  background-color: var(--error-claro);
+  border-color: var(--error);
+  color: var(--error-oscuro);
+}
+
+.estado-pastilla.estado-advertencia {
+  background-color: var(--acento-claro);
+  border-color: var(--acento);
+  color: var(--acento-texto);
+}
+
+.estado-pastilla.estado-info {
+  background-color: var(--info-claro);
+  border-color: var(--info);
+  color: var(--info-oscuro);
+}
+
+.icono-acento {
+  color: var(--acento);
+}
+
+.titulo-seccion {
+  border-bottom: 2px solid var(--acento);
+  display: inline-block;
+  padding-bottom: 0.4rem;
 }

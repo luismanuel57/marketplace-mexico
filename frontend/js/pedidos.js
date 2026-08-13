@@ -17,7 +17,7 @@ async function cargarPedidos() {
         <div class="tarjeta p-5 text-center">
           <i class="bi bi-box fs-1 text-muted"></i>
           <p class="text-muted mt-3 mb-3">Aún no tienes pedidos.</p>
-          <a class="btn-negro" href="catalogo.html">Ver catálogo</a>
+          <a class="btn-negro" href="catalogo.html"><i class="bi bi-shop me-1"></i>Ver catálogo</a>
         </div>`;
       return;
     }
@@ -26,8 +26,9 @@ async function cargarPedidos() {
       <div class="tarjeta p-4 mb-3 d-flex flex-wrap align-items-center gap-3">
         <div class="flex-grow-1">
           <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-receipt icono-acento"></i>
             <strong>${pedido.folio_orden}</strong>
-            <span class="estado-pastilla">${formatearEstado(pedido.estado)}</span>
+            <span class="estado-pastilla ${claseEstado(pedido.estado)}"><i class="bi ${iconoEstado(pedido.estado)} me-1"></i>${formatearEstado(pedido.estado)}</span>
           </div>
           <p class="small text-muted mb-0">
             ${new Date(pedido.fecha_orden).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -36,7 +37,7 @@ async function cargarPedidos() {
         <div class="text-end">
           <div class="fw-bold">${formatearPrecio(pedido.total)}</div>
           <button type="button" class="btn-ghost btn-sm mt-1 ver-detalle" data-id="${pedido.id_orden}">
-            Ver detalle
+            <i class="bi bi-eye me-1"></i>Ver detalle
           </button>
         </div>
       </div>`).join('');
@@ -52,7 +53,7 @@ async function cargarPedidos() {
             </div>`).join('');
           mostrarAlerta('Detalle del pedido',
             `<strong>${detalle.folio_orden}</strong><br>
-             <span class="estado-pastilla">${formatearEstado(detalle.estado)}</span>
+             <span class="estado-pastilla ${claseEstado(detalle.estado)}"><i class="bi ${iconoEstado(detalle.estado)} me-1"></i>${formatearEstado(detalle.estado)}</span>
              <div class="my-2">${articulos}</div>
              <div class="d-flex justify-content-between"><span>Subtotal</span><span>${formatearPrecio(detalle.subtotal)}</span></div>
              <div class="d-flex justify-content-between"><span>Envío</span><span>${formatearPrecio(detalle.envio)}</span></div>

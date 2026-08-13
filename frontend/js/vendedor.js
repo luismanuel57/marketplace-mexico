@@ -33,18 +33,18 @@ async function cargarArticulosVendedor() {
                   <td>${a.categoria}</td>
                   <td>${formatearPrecio(a.precio_mxn)}</td>
                   <td>${a.existencias}</td>
-                  <td><span class="estado-pastilla">${a.estatus}</span></td>
-                  <td>${a.destacado ? 'Sí' : 'No'}</td>
+                  <td><span class="estado-pastilla ${claseEstado(a.estatus)}"><i class="bi ${iconoEstado(a.estatus)} me-1"></i>${a.estatus}</span></td>
+                  <td><i class="bi ${a.destacado ? 'bi-star-fill icono-acento' : 'bi-star'} me-1"></i>${a.destacado ? 'Sí' : 'No'}</td>
                   <td>
-                    <button type="button" class="btn-ghost btn-sm editar-articulo" data-id="${a.id_articulo}">Editar</button>
+                    <button type="button" class="btn-ghost btn-sm editar-articulo" data-id="${a.id_articulo}"><i class="bi bi-pencil-square me-1"></i>Editar</button>
                     ${a.estatus === 'activo'
-                      ? `<button type="button" class="btn-ghost btn-sm desactivar-articulo" data-id="${a.id_articulo}">Desactivar</button>`
-                      : `<button type="button" class="btn-ghost btn-sm activar-articulo" data-id="${a.id_articulo}">Activar</button>`}
+                      ? `<button type="button" class="btn-ghost btn-sm desactivar-articulo" data-id="${a.id_articulo}"><i class="bi bi-toggle-off me-1"></i>Desactivar</button>`
+                      : `<button type="button" class="btn-ghost btn-sm activar-articulo" data-id="${a.id_articulo}"><i class="bi bi-toggle-on me-1"></i>Activar</button>`}
                   </td>
                 </tr>`).join('');
 
     const tabla = propios.length === 0
-      ? '<div class="tarjeta p-4 text-center text-muted">Aún no publicas artículos. ¡Crea el primero con el botón "Nuevo artículo"!</div>'
+      ? '<div class="tarjeta p-4 text-center text-muted"><i class="bi bi-box-seam fs-2 icono-acento d-block mb-2"></i>Aún no publicas artículos. ¡Crea el primero con el botón "Nuevo artículo"!</div>'
       : `<div class="tarjeta p-0">
           <div class="table-responsive">
             <table class="table table-hover mb-0">
@@ -64,8 +64,8 @@ async function cargarArticulosVendedor() {
 
     contenedor.innerHTML = `
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="h5 mb-0">Mis artículos</h2>
-        <button type="button" class="btn-negro btn-sm" id="btn-nuevo-articulo">+ Nuevo artículo</button>
+        <h2 class="h5 mb-0"><i class="bi bi-box-seam icono-acento me-1"></i>Mis artículos</h2>
+        <button type="button" class="btn-negro btn-sm" id="btn-nuevo-articulo"><i class="bi bi-plus-circle me-1"></i>Nuevo artículo</button>
       </div>
       ${tabla}
       ${ventasHtml}`;
@@ -119,8 +119,8 @@ async function seccionVentas() {
     if (ventas.resumen.total_ordenes === 0) {
       return `
         <div class="mt-5">
-          <h2 class="h5 mb-3">Mis ventas</h2>
-          <div class="tarjeta p-4 text-center text-muted">Aún no tienes ventas. Cuando vendas productos verás aquí tu reporte.</div>
+          <h2 class="h5 mb-3"><i class="bi bi-graph-up-arrow icono-acento me-1"></i>Mis ventas</h2>
+          <div class="tarjeta p-4 text-center text-muted"><i class="bi bi-graph-up-arrow fs-2 icono-acento d-block mb-2"></i>Aún no tienes ventas. Cuando vendas productos verás aquí tu reporte.</div>
         </div>`;
     }
 
@@ -128,19 +128,22 @@ async function seccionVentas() {
       <div class="row g-3 mb-4">
         <div class="col-md-4">
           <div class="tarjeta p-3 text-center">
-            <div class="small text-muted text-uppercase">Ingresos totales</div>
+            <i class="bi bi-coin icono-acento fs-4"></i>
+            <div class="small text-muted text-uppercase mt-1">Ingresos totales</div>
             <div class="fs-5 fw-bold mt-1">${formatearPrecio(ventas.resumen.ingresos)}</div>
           </div>
         </div>
         <div class="col-md-4">
           <div class="tarjeta p-3 text-center">
-            <div class="small text-muted text-uppercase">Órdenes</div>
+            <i class="bi bi-bag-check icono-acento fs-4"></i>
+            <div class="small text-muted text-uppercase mt-1">Órdenes</div>
             <div class="fs-5 fw-bold mt-1">${ventas.resumen.total_ordenes}</div>
           </div>
         </div>
         <div class="col-md-4">
           <div class="tarjeta p-3 text-center">
-            <div class="small text-muted text-uppercase">Artículos vendidos</div>
+            <i class="bi bi-box-seam icono-acento fs-4"></i>
+            <div class="small text-muted text-uppercase mt-1">Artículos vendidos</div>
             <div class="fs-5 fw-bold mt-1">${ventas.resumen.articulos_vendidos}</div>
           </div>
         </div>
@@ -190,11 +193,11 @@ async function seccionVentas() {
 
     return `
       <div class="mt-5">
-        <h2 class="h5 mb-3">Mis ventas</h2>
+        <h2 class="h5 mb-3"><i class="bi bi-graph-up-arrow icono-acento me-1"></i>Mis ventas</h2>
         ${tarjetas}
-        <h3 class="h6 text-uppercase text-muted mt-4 mb-2">Ventas por día (últimos 30 días)</h3>
+        <h3 class="h6 text-uppercase text-muted mt-4 mb-2"><i class="bi bi-calendar3 me-1"></i>Ventas por día (últimos 30 días)</h3>
         ${tablaDia}
-        <h3 class="h6 text-uppercase text-muted mt-4 mb-2">Top productos</h3>
+        <h3 class="h6 text-uppercase text-muted mt-4 mb-2"><i class="bi bi-trophy me-1"></i>Top productos</h3>
         ${tablaTop}
       </div>`;
   } catch (error) {
@@ -261,7 +264,7 @@ async function mostrarFormularioArticulo(articulo = null) {
     </div>`;
   overlay.querySelector('.modal-sistema-acciones').innerHTML = `
     <button type="button" class="btn-ghost btn-sm px-4 modal-cancelar">Cancelar</button>
-    <button type="button" class="btn-negro btn-sm px-4 modal-guardar">Guardar</button>`;
+    <button type="button" class="btn-negro btn-sm px-4 modal-guardar"><i class="bi bi-check-lg me-1"></i>Guardar</button>`;
   if (datos.imagen_url) {
     const preview = overlay.querySelector('#art-imagen-preview');
     preview.src = datos.imagen_url;

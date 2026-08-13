@@ -18,7 +18,7 @@
           <span class="logo">TD</span>
           <span>Tianguis <span class="texto-elegante">Digital</span></span>
         </a>
-        <a class="nav-link" href="index.html">Volver al inicio</a>
+        <a class="nav-link" href="index.html"><i class="bi bi-arrow-left me-1"></i>Volver al inicio</a>
       </div>
     </nav>
   </header>
@@ -26,8 +26,8 @@
   <main class="container py-5 d-flex justify-content-center">
     <div class="tarjeta-auth w-100">
       <div class="pestanas-auth d-flex">
-        <button type="button" class="pestana-auth activa" data-vista="form-login">Iniciar sesión</button>
-        <button type="button" class="pestana-auth" data-vista="form-registro">Crear cuenta</button>
+        <button type="button" class="pestana-auth activa" data-vista="form-login"><i class="bi bi-box-arrow-in-right me-1"></i>Iniciar sesión</button>
+        <button type="button" class="pestana-auth" data-vista="form-registro"><i class="bi bi-person-plus me-1"></i>Crear cuenta</button>
       </div>
 
       <!-- Login -->
@@ -46,7 +46,7 @@
           <p class="mensaje-error">Campo obligatorio.</p>
         </div>
 
-        <button type="submit" class="btn-negro w-100 mb-3">Iniciar sesión</button>
+        <button type="submit" class="btn-negro w-100 mb-3"><i class="bi bi-box-arrow-in-right me-1"></i>Iniciar sesión</button>
         <p class="text-center mb-0 small text-muted">
           ¿Aún no tienes cuenta? <a href="#" class="pestana-auth-enlace" data-vista="form-registro">Regístrate</a>
         </p>
@@ -142,14 +142,25 @@
           Al ingresar tu código postal, municipio y estado se completan automáticamente.
         </p>
 
-        <button type="submit" class="btn-negro w-100">Crear cuenta</button>
+        <button type="submit" class="btn-negro w-100"><i class="bi bi-person-plus me-1"></i>Crear cuenta</button>
       </form>
     </div>
   </main>
 
   <footer class="pie-pagina mt-5">
-    <div class="container text-center py-3">
-      <p class="mb-0">Tianguis Digital &copy; 2026 &mdash; Examen Unidad 3. Hecho en México.</p>
+    <div class="container py-4">
+      <div class="row g-2 text-center text-md-start">
+        <div class="col-md-4">
+          <p class="mb-0"><i class="bi bi-geo-alt me-1"></i>Hecho en México</p>
+        </div>
+        <div class="col-md-4">
+          <p class="mb-0"><i class="bi bi-envelope me-1"></i>soporte@tianguisdigital.mx</p>
+        </div>
+        <div class="col-md-4">
+          <p class="mb-0"><i class="bi bi-telephone me-1"></i>+52 33 0000 0000</p>
+        </div>
+      </div>
+      <p class="text-center mb-0 mt-3">Tianguis Digital &copy; 2026 &mdash; Examen Unidad 3.</p>
     </div>
   </footer>
 

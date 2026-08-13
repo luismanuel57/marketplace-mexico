@@ -34,6 +34,7 @@ async function cargarDetalle() {
           <p class="text-muted">${articulo.descripcion || 'Sin descripción disponible.'}</p>
           <div class="h3 fw-bold mb-3">${formatearPrecio(articulo.precio_mxn)}</div>
           <p class="small ${agotado ? 'text-danger' : 'text-success'}">
+            <i class="bi ${agotado ? 'bi-x-circle' : 'bi-check-circle'} me-1"></i>
             ${agotado ? 'Agotado' : `${articulo.existencias} disponibles`}
           </p>
           <div class="d-flex align-items-center gap-3 mb-4">
@@ -43,10 +44,10 @@ async function cargarDetalle() {
               <button type="button" class="btn btn-sm px-3" id="btn-mas" ${agotado ? 'disabled' : ''}>+</button>
             </div>
             <button type="button" class="btn-negro flex-grow-1" id="btn-agregar" ${agotado ? 'disabled' : ''}>
-              <i class="bi bi-bag me-1"></i> Agregar a la bolsa
+              <i class="bi bi-cart-plus me-1"></i> Agregar a la bolsa
             </button>
           </div>
-          <a href="catalogo.html" class="btn-ghost">&larr; Seguir comprando</a>
+          <a href="catalogo.html" class="btn-ghost"><i class="bi bi-arrow-left me-1"></i>Seguir comprando</a>
         </div>
       </div>`;
 

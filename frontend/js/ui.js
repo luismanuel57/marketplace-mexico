@@ -54,6 +54,36 @@ async function mostrarAlerta(titulo, mensaje, tipo = 'info', esHtml = false) {
   abrirModal();
 }
 
+// Clase de color para las pastillas de estado (pedidos y artículos).
+function claseEstado(estado) {
+  const clases = {
+    pendiente: 'estado-advertencia',
+    confirmado: 'estado-info',
+    preparando: 'estado-info',
+    enviado: 'estado-info',
+    entregado: 'estado-exito',
+    cancelado: 'estado-error',
+    activo: 'estado-exito',
+    inactivo: 'estado-error',
+  };
+  return clases[estado] || '';
+}
+
+// Icono de Bootstrap Icons asociado al estado.
+function iconoEstado(estado) {
+  const iconos = {
+    pendiente: 'bi-clock-history',
+    confirmado: 'bi-check2-circle',
+    preparando: 'bi-hourglass-split',
+    enviado: 'bi-truck',
+    entregado: 'bi-house-check',
+    cancelado: 'bi-x-circle',
+    activo: 'bi-check2-circle',
+    inactivo: 'bi-x-circle',
+  };
+  return iconos[estado] || 'bi-circle';
+}
+
 function mostrarConfirmacion(titulo, mensaje, textoConfirmar = 'Confirmar') {
   return new Promise((resolver) => {
     modalResolucion = resolver;

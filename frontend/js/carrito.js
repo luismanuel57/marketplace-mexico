@@ -8,7 +8,7 @@ async function cargarBolsa() {
       <div class="tarjeta p-5 text-center">
         <i class="bi bi-bag fs-1 text-muted"></i>
         <p class="text-muted mt-3">Inicia sesión para ver tu bolsa.</p>
-        <a class="btn-negro mt-2" href="login.html">Iniciar sesión</a>
+        <a class="btn-negro mt-2" href="login.html"><i class="bi bi-box-arrow-in-right me-1"></i>Iniciar sesión</a>
       </div>`;
     return;
   }
@@ -18,9 +18,9 @@ async function cargarBolsa() {
     if (bolsa.articulos.length === 0) {
       contenedor.innerHTML = `
         <div class="tarjeta p-5 text-center">
-          <i class="bi bi-bag fs-1 text-muted"></i>
+          <i class="bi bi-bag-x fs-1 text-muted"></i>
           <p class="text-muted mt-3 mb-3">Tu bolsa está vacía.</p>
-          <a class="btn-negro" href="catalogo.html">Ver catálogo</a>
+          <a class="btn-negro" href="catalogo.html"><i class="bi bi-shop me-1"></i>Ver catálogo</a>
         </div>`;
       return;
     }
@@ -33,7 +33,7 @@ async function cargarBolsa() {
         </div>
         <div class="col-lg-4">
           <div class="tarjeta p-4">
-            <h2 class="h6 mb-3 text-uppercase text-muted">Resumen</h2>
+            <h2 class="h6 mb-3 text-uppercase text-muted"><i class="bi bi-receipt me-1"></i>Resumen</h2>
             <div class="d-flex justify-content-between mb-2">
               <span class="text-muted">Subtotal</span>
               <span>${formatearPrecio(bolsa.subtotal)}</span>
@@ -44,9 +44,9 @@ async function cargarBolsa() {
             </div>
             <div class="d-flex justify-content-between border-top pt-3 mb-4">
               <strong>Total</strong>
-              <strong>${formatearPrecio(total)}</strong>
+              <strong class="tarjeta-precio">${formatearPrecio(total)}</strong>
             </div>
-            <button type="button" class="btn-negro w-100" id="btn-ordenar">Generar pedido</button>
+            <button type="button" class="btn-negro w-100" id="btn-ordenar"><i class="bi bi-credit-card me-1"></i>Generar pedido</button>
           </div>
         </div>
       </div>`;
@@ -194,7 +194,7 @@ async function generarPedido() {
     overlay.querySelector('.modal-sistema-mensaje').innerHTML = guardadas + campos;
     acciones.innerHTML = `
       <button type="button" class="btn-ghost btn-sm px-4 modal-cancelar">Cancelar</button>
-      <button type="button" class="btn-negro btn-sm px-4 modal-generar-pedido">Generar pedido</button>`;
+      <button type="button" class="btn-negro btn-sm px-4 modal-generar-pedido"><i class="bi bi-credit-card me-1"></i>Generar pedido</button>`;
     overlay.classList.add('visible');
 
     llenarEstadosDesde('ped-estado');
@@ -296,7 +296,7 @@ function expiracionValida(texto) {
 // El número de tarjeta se valida solo en el cliente y NUNCA viaja al backend:
 // al backend solo llega metodo_pago: 'tarjeta_prueba'.
 function mostrarPasoPago(overlay, idDomicilio) {
-  overlay.querySelector('.modal-sistema-titulo').textContent = 'Pago';
+  overlay.querySelector('.modal-sistema-titulo').innerHTML = '<i class="bi bi-credit-card me-1"></i>Pago';
   overlay.querySelector('.modal-sistema-mensaje').innerHTML = `
     <p class="small text-muted mb-3"><i class="bi bi-shield-check me-1"></i>Pago de prueba &mdash; los datos no se envían ni se almacenan.</p>
     <div class="campo-form mb-2">
@@ -329,7 +329,7 @@ function mostrarPasoPago(overlay, idDomicilio) {
   const acciones = overlay.querySelector('.modal-sistema-acciones');
   acciones.innerHTML = `
     <button type="button" class="btn-ghost btn-sm px-4 modal-cancelar">Cancelar</button>
-    <button type="button" class="btn-negro btn-sm px-4 modal-pagar">Pagar</button>`;
+    <button type="button" class="btn-negro btn-sm px-4 modal-pagar"><i class="bi bi-check2-circle me-1"></i>Pagar</button>`;
   overlay.classList.add('visible');
 
   const numero = document.getElementById('pago-numero');
@@ -383,7 +383,7 @@ function mostrarPasoPago(overlay, idDomicilio) {
     // Evita doble clic: deshabilita el botón mientras se genera el pedido.
     const botonPagar = overlay.querySelector('.modal-pagar');
     botonPagar.disabled = true;
-    botonPagar.textContent = 'Procesando...';
+    botonPagar.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Procesando...';
 
     try {
       const resultado = await peticion('/ordenes', {
