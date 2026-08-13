@@ -145,7 +145,7 @@ async function generarPedido() {
       </button>`)
       .join('');
 
-    const overlay = document.getElementById('modal-sistema');
+    const overlay = crearModalSistema();
     const acciones = overlay.querySelector('.modal-sistema-acciones');
     overlay.querySelector('.modal-sistema-titulo').textContent = 'Elige la dirección de envío';
     overlay.querySelector('.modal-sistema-mensaje').innerHTML = opciones;

@@ -90,7 +90,7 @@ async function cargarArticulosAdmin() {
 }
 
 async function mostrarFormularioArticulo() {
-  const overlay = document.getElementById('modal-sistema');
+  const overlay = crearModalSistema();
   const categorias = await peticion('/categorias');
   const opciones = categorias.map((c) => `<option value="${c.id_categoria}">${c.nombre}</option>`).join('');
 
