@@ -138,19 +138,22 @@ async function generarPedido() {
     overlay.querySelector('.modal-sistema-titulo').textContent = 'Dirección de envío';
 
     const guardadas = domicilios.length
-      ? `<p class="small text-muted mb-2">Dirección guardada:</p>
-         <div class="mb-3">${domicilios.map((d) => `
+      ? `<div class="contenedor-guardadas">
+         <p class="small text-muted mb-2">Dirección guardada:</p>
+         <div class="mb-2">${domicilios.map((d) => `
            <label class="d-block tarjeta p-3 mb-2 opcion-domicilio" style="cursor:pointer">
              <input type="radio" name="domicilio" value="${d.id_domicilio}" class="me-2" checked>
              <span><strong>${d.nombre || 'Dirección'}</strong><br>
              <small class="text-muted">${d.calle} ${d.numero || ''}, ${d.colonia}, ${d.codigo_postal} ${d.municipio}, ${d.estado}</small></span>
            </label>`).join('')}
-           <button type="button" class="btn-ghost btn-sm btn-agregar-direccion">Usar otra dirección</button>
-         </div>`
+         </div>
+         <button type="button" class="btn-ghost btn-sm mb-3 btn-agregar-direccion">Usar otra dirección</button>
+       </div>`
       : '';
 
     const campos = `
       <div class="form-nueva-direccion ${domicilios.length ? 'd-none' : ''}">
+        <p class="small text-danger mb-2 aviso-formulario d-none" id="aviso-direccion"></p>
         <div class="campo-form mb-2">
           <label>Nombre</label>
           <input type="text" class="form-control" id="ped-nombre" placeholder="Nombre de la persona que recibe">
@@ -170,6 +173,7 @@ async function generarPedido() {
         <div class="campo-form mb-2">
           <label>Código Postal *</label>
           <input type="text" class="form-control" id="ped-cp" maxlength="5" inputmode="numeric" placeholder="Ej. 44100">
+          <small id="aviso-cp" class="text-muted"></small>
         </div>
         <div class="campo-form mb-2">
           <label>Municipio *</label>
@@ -203,8 +207,8 @@ async function generarPedido() {
     if (btnAgregar) {
       btnAgregar.addEventListener('click', () => {
         overlay.querySelectorAll('input[name="domicilio"]').forEach((r) => (r.disabled = true));
+        overlay.querySelector('.contenedor-guardadas').classList.add('d-none');
         overlay.querySelector('.form-nueva-direccion').classList.remove('d-none');
-        overlay.querySelector('.btn-agregar-direccion').classList.add('d-none');
       });
     }
 
@@ -221,7 +225,9 @@ async function generarPedido() {
           return !valido;
         });
         if (faltantes.length) {
-          mostrarAlerta('Dirección incompleta', 'Completa los campos obligatorios de la dirección.', 'error');
+          const aviso = document.getElementById('aviso-direccion');
+          aviso.textContent = 'Completa los campos obligatorios de la dirección.';
+          aviso.classList.remove('d-none');
           return;
         }
 
@@ -241,7 +247,9 @@ async function generarPedido() {
           });
           idDomicilio = nuevo.domicilio.id_domicilio;
         } catch (error) {
-          mostrarAlerta('No se pudo guardar la dirección', error.message, 'error');
+          const aviso = document.getElementById('aviso-direccion');
+          aviso.textContent = error.message;
+          aviso.classList.remove('d-none');
           return;
         }
       }

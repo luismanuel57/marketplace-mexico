@@ -23,8 +23,13 @@ async function autocompletarCodigoPostalDesde(input, idMunicipio, idEstado) {
 
   const campoMunicipio = document.getElementById(idMunicipio);
   const campoEstado = document.getElementById(idEstado);
+  const aviso = document.getElementById('aviso-cp');
 
-  mostrarAlerta('Consultando...', 'Buscando el código postal en SEPOMEX.', 'info');
+  input.classList.remove('invalido');
+  campoMunicipio.disabled = true;
+  campoEstado.disabled = true;
+  if (aviso) aviso.textContent = 'Buscando código postal...';
+
   try {
     const respuesta = await fetch(`${URL_CODIGOS_POSTALES}${codigo}`);
     if (!respuesta.ok) throw new Error('Código postal no encontrado');
@@ -35,12 +40,11 @@ async function autocompletarCodigoPostalDesde(input, idMunicipio, idEstado) {
     campoEstado.value = datos.estado;
     campoMunicipio.disabled = true;
     campoEstado.disabled = true;
-    input.classList.remove('invalido');
-    cerrarModal();
+    if (aviso) aviso.textContent = '';
   } catch (error) {
-    cerrarModal();
     campoMunicipio.disabled = false;
     campoEstado.disabled = false;
     input.classList.add('invalido');
+    if (aviso) aviso.textContent = error.message;
   }
 }
