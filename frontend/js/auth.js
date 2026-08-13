@@ -169,6 +169,7 @@ async function registrarUsuario(e) {
     correo: correo.value.trim(),
     telefono: document.getElementById('reg-telefono').value.trim() || null,
     contrasena: contrasena.value,
+    rol: document.getElementById('reg-rol').value,
     domicilio: leerDireccion(),
   };
 

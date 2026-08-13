@@ -63,6 +63,7 @@ CREATE TABLE categorias (
 CREATE TABLE articulos (
   id_articulo    SERIAL PRIMARY KEY,
   id_categoria   INT           NOT NULL REFERENCES categorias(id_categoria),
+  id_vendedor    INT           NOT NULL REFERENCES clientes(id_cliente),
   nombre         VARCHAR(100)  NOT NULL,
   descripcion    TEXT,
   precio_mxn     NUMERIC(10,2) NOT NULL CHECK (precio_mxn >= 0),
@@ -77,6 +78,7 @@ CREATE TABLE articulos (
 CREATE INDEX idx_articulos_categoria ON articulos(id_categoria);
 CREATE INDEX idx_articulos_nombre    ON articulos(nombre);
 CREATE INDEX idx_articulos_estatus   ON articulos(estatus);
+CREATE INDEX idx_articulos_vendedor  ON articulos(id_vendedor);
 
 -- ------------------------------------------------------------
 -- bolsa (carrito de compras)

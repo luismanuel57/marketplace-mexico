@@ -2,7 +2,7 @@ import pool from '../db.js';
 
 const SELECT_BASE = `
   SELECT a.id_articulo, a.nombre, a.descripcion, a.precio_mxn, a.existencias,
-         a.imagen_url, a.marca, a.estatus, a.fecha_registro,
+         a.imagen_url, a.marca, a.estatus, a.fecha_registro, a.id_vendedor,
          c.id_categoria, c.nombre AS categoria
   FROM articulos a
   JOIN categorias c ON c.id_categoria = a.id_categoria
@@ -63,7 +63,7 @@ export async function detalle(req, res) {
 
 export async function crear(req, res) {
   try {
-    const { id_categoria, nombre, descripcion, precio_mxn, existencias, imagen_url, marca } = req.body;
+    const { id_categoria, nombre, descripcion, precio_mxn, existencias, imagen_url, marca, id_vendedor } = req.body;
 
     if (!id_categoria || !nombre || precio_mxn === undefined) {
       return res.status(400).json({ error: 'id_categoria, nombre y precio_mxn son obligatorios' });
@@ -80,11 +80,22 @@ export async function crear(req, res) {
       return res.status(400).json({ error: 'La categoría no existe' });
     }
 
+    // El vendedor publica como dueño propio; el administrador puede elegir
+    // un vendedor (id_vendedor) o publicar como dueño él mismo.
+    let idVendedor = req.cliente.id;
+    if (req.cliente.rol === 'administrador' && id_vendedor) {
+      const vendedor = await pool.query('SELECT id_cliente FROM clientes WHERE id_cliente = $1', [id_vendedor]);
+      if (vendedor.rows.length === 0) {
+        return res.status(400).json({ error: 'El vendedor indicado no existe' });
+      }
+      idVendedor = Number(id_vendedor);
+    }
+
     const resultado = await pool.query(
-      `INSERT INTO articulos (id_categoria, nombre, descripcion, precio_mxn, existencias, imagen_url, marca)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO articulos (id_categoria, id_vendedor, nombre, descripcion, precio_mxn, existencias, imagen_url, marca)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
-      [id_categoria, nombre, descripcion || null, Number(precio_mxn), existencias || 0, imagen_url || null, marca || null]
+      [id_categoria, idVendedor, nombre, descripcion || null, Number(precio_mxn), existencias || 0, imagen_url || null, marca || null]
     );
 
     res.status(201).json({ mensaje: 'Producto creado', articulo: resultado.rows[0] });

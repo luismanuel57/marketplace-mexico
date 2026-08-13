@@ -18,15 +18,18 @@ async function verificarAdmin() {
       <button type="button" class="pestana-auth activa" data-vista="vista-articulos">Artículos</button>
       <button type="button" class="pestana-auth" data-vista="vista-pedidos">Pedidos</button>
       <button type="button" class="pestana-auth" data-vista="vista-clientes">Clientes</button>
+      <button type="button" class="pestana-auth" data-vista="vista-vendedores">Vendedores</button>
     </div>
     <div id="vista-articulos"></div>
     <div id="vista-pedidos" class="d-none"></div>
-    <div id="vista-clientes" class="d-none"></div>`;
+    <div id="vista-clientes" class="d-none"></div>
+    <div id="vista-vendedores" class="d-none"></div>`;
 
   const cargarVista = {
     'vista-articulos': cargarArticulosAdmin,
     'vista-pedidos': cargarPedidosAdmin,
     'vista-clientes': cargarClientesAdmin,
+    'vista-vendedores': cargarVendedoresAdmin,
   };
 
   document.querySelectorAll('#verificacion-admin .pestana-auth').forEach((pestana) => {
@@ -307,6 +310,78 @@ async function cargarClientesAdmin() {
           </table>
         </div>
       </div>`;
+  } catch (error) {
+    contenedor.innerHTML = `<p class="text-danger">${error.message}</p>`;
+  }
+}
+
+async function cargarVendedoresAdmin() {
+  const contenedor = document.getElementById('vista-vendedores');
+  try {
+    const vendedores = await peticion('/vendedores');
+    contenedor.innerHTML = `
+      <h2 class="h5 mb-3">Vendedores</h2>
+      <div class="tarjeta p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="small text-muted">
+              <tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Artículos</th><th></th></tr>
+            </thead>
+            <tbody>
+              ${vendedores.map((v) => `
+                <tr>
+                  <td>${v.id_cliente}</td>
+                  <td>${v.nombre} ${v.apellido_paterno || ''}</td>
+                  <td>${v.correo}</td>
+                  <td>${v.total_articulos}</td>
+                  <td>
+                    <button type="button" class="btn-ghost btn-sm ver-articulos-vendedor" data-id="${v.id_cliente}">
+                      Ver artículos
+                    </button>
+                  </td>
+                </tr>
+                <tr class="d-none fila-articulos-vendedor" data-vendedor="${v.id_cliente}">
+                  <td colspan="5" class="p-3 bg-light">
+                    <div class="articulos-vendedor-carga text-muted small">Cargando artículos...</div>
+                  </td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+
+    document.querySelectorAll('.ver-articulos-vendedor').forEach((boton) => {
+      boton.addEventListener('click', async () => {
+        const id = boton.dataset.id;
+        const fila = document.querySelector(`.fila-articulos-vendedor[data-vendedor="${id}"]`);
+        fila.classList.toggle('d-none');
+        if (fila.dataset.cargado || fila.classList.contains('d-none')) return;
+        try {
+          const articulos = await peticion(`/vendedores/${id}/articulos`);
+          const cuerpo = articulos.map((a) => `
+            <tr>
+              <td>${a.id_articulo}</td>
+              <td>${a.nombre}</td>
+              <td>${a.categoria}</td>
+              <td>${formatearPrecio(a.precio_mxn)}</td>
+              <td>${a.existencias}</td>
+              <td><span class="estado-pastilla">${a.estatus}</span></td>
+            </tr>`).join('');
+          fila.querySelector('.articulos-vendedor-carga').outerHTML = `
+            <table class="table table-sm table-bordered mb-0">
+              <thead class="small text-muted">
+                <tr><th>ID</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Existencias</th><th>Estatus</th></tr>
+              </thead>
+              <tbody>
+                ${cuerpo || '<tr><td colspan="6" class="text-muted small">Este vendedor no tiene artículos.</td></tr>'}
+              </tbody>
+            </table>`;
+          fila.dataset.cargado = '1';
+        } catch (error) {
+          fila.querySelector('.articulos-vendedor-carga').textContent = error.message;
+        }
+      });
+    });
   } catch (error) {
     contenedor.innerHTML = `<p class="text-danger">${error.message}</p>`;
   }

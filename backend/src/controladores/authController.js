@@ -5,7 +5,7 @@ import pool from '../db.js';
 export async function registrar(req, res) {
   const cliente = await pool.connect();
   try {
-    const { nombre, apellido_paterno, apellido_materno, correo, telefono, contrasena, domicilio } = req.body;
+    const { nombre, apellido_paterno, apellido_materno, correo, telefono, contrasena, rol, domicilio } = req.body;
 
     if (!nombre || !apellido_paterno || !correo || !contrasena) {
       return res.status(400).json({ error: 'nombre, apellido_paterno, correo y contrasena son obligatorios' });
@@ -15,6 +15,10 @@ export async function registrar(req, res) {
     }
     if (contrasena.length < 6) {
       return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+    }
+    const rolSolicitado = rol || 'cliente';
+    if (!['cliente', 'vendedor'].includes(rolSolicitado)) {
+      return res.status(400).json({ error: 'Rol inválido. Valores permitidos: cliente, vendedor' });
     }
     if (domicilio) {
       const { calle, colonia, codigo_postal, municipio, estado } = domicilio;
@@ -32,7 +36,13 @@ export async function registrar(req, res) {
     }
 
     const contrasenaHash = await bcrypt.hash(contrasena, 10);
-    const rolCliente = await cliente.query("SELECT id_rol FROM roles WHERE nombre_rol = 'cliente'");
+    const rolSeleccionado = await cliente.query(
+      'SELECT id_rol FROM roles WHERE nombre_rol = $1',
+      [rolSolicitado]
+    );
+    if (rolSeleccionado.rows.length === 0) {
+      return res.status(400).json({ error: 'El rol seleccionado no existe en el sistema' });
+    }
 
     await cliente.query('BEGIN');
 
@@ -40,7 +50,7 @@ export async function registrar(req, res) {
       `INSERT INTO clientes (nombre, apellido_paterno, apellido_materno, correo, telefono, contrasena_hash, id_rol)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id_cliente, nombre, apellido_paterno, apellido_materno, correo, telefono`,
-      [nombre, apellido_paterno, apellido_materno || null, correo, telefono || null, contrasenaHash, rolCliente.rows[0].id_rol]
+      [nombre, apellido_paterno, apellido_materno || null, correo, telefono || null, contrasenaHash, rolSeleccionado.rows[0].id_rol]
     );
 
     let nuevoDomicilio = null;
