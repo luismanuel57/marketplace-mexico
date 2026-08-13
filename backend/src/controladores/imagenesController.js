@@ -36,7 +36,10 @@ export async function servirImagen(req, res) {
   }
 }
 
-// Devuelve la URL local del proxy para un file ID de Drive.
-export function urlImagenLocal(id) {
-  return `/api/imagenes/${id}`;
+// Devuelve la URL absoluta del proxy para un file ID de Drive.
+// Usa el host del request para que el navegador la pida al backend
+// (localhost:3000) y no al servidor estático del frontend.
+export function urlImagenLocal(id, req) {
+  const base = `${req.protocol}://${req.get('host')}`;
+  return `${base}/api/imagenes/${id}`;
 }

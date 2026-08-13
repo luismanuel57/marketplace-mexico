@@ -13,11 +13,11 @@ const SELECT_BASE = `
 // Transforma la URL de Drive en la URL local del proxy para que el navegador
 // no descargue la imagen directo desde Google (bloquea por hotlink).
 // La BD siempre conserva la URL original; solo cambia la respuesta al cliente.
-function imagenParaRespuesta(imagenUrl) {
+function imagenParaRespuesta(imagenUrl, req) {
   if (!imagenUrl) return null;
   const coincidencia = imagenUrl.match(/[?&]id=([^&\s]+)/);
   if (coincidencia) {
-    return urlImagenLocal(coincidencia[1]);
+    return urlImagenLocal(coincidencia[1], req);
   }
   return imagenUrl;
 }
@@ -56,7 +56,7 @@ export async function listar(req, res) {
     sql += destacado === 'true' ? ' ORDER BY a.precio_mxn DESC LIMIT 8' : ' ORDER BY a.nombre';
 
     const resultado = await pool.query(sql, valores);
-    res.json(resultado.rows.map((fila) => ({ ...fila, imagen_url: imagenParaRespuesta(fila.imagen_url) })));
+    res.json(resultado.rows.map((fila) => ({ ...fila, imagen_url: imagenParaRespuesta(fila.imagen_url, req) })));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -73,7 +73,7 @@ export async function detalle(req, res) {
       return res.status(404).json({ error: 'Producto no encontrado' });
     }
     const fila = resultado.rows[0];
-    res.json({ ...fila, imagen_url: imagenParaRespuesta(fila.imagen_url) });
+    res.json({ ...fila, imagen_url: imagenParaRespuesta(fila.imagen_url, req) });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -128,7 +128,7 @@ export async function crear(req, res) {
 
     res.status(201).json({
       mensaje: 'Producto creado',
-      articulo: { ...resultado.rows[0], imagen_url: imagenParaRespuesta(resultado.rows[0].imagen_url) },
+      articulo: { ...resultado.rows[0], imagen_url: imagenParaRespuesta(resultado.rows[0].imagen_url, req) },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -178,7 +178,7 @@ export async function modificar(req, res) {
 
     res.json({
       mensaje: 'Producto actualizado',
-      articulo: { ...resultado.rows[0], imagen_url: imagenParaRespuesta(resultado.rows[0].imagen_url) },
+      articulo: { ...resultado.rows[0], imagen_url: imagenParaRespuesta(resultado.rows[0].imagen_url, req) },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
