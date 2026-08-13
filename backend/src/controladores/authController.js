@@ -3,8 +3,9 @@ import jwt from 'jsonwebtoken';
 import pool from '../db.js';
 
 export async function registrar(req, res) {
+  const cliente = await pool.connect();
   try {
-    const { nombre, apellido_paterno, apellido_materno, correo, telefono, contrasena } = req.body;
+    const { nombre, apellido_paterno, apellido_materno, correo, telefono, contrasena, domicilio } = req.body;
 
     if (!nombre || !apellido_paterno || !correo || !contrasena) {
       return res.status(400).json({ error: 'nombre, apellido_paterno, correo y contrasena son obligatorios' });
@@ -15,25 +16,63 @@ export async function registrar(req, res) {
     if (contrasena.length < 6) {
       return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
     }
+    if (domicilio) {
+      const { calle, colonia, codigo_postal, municipio, estado } = domicilio;
+      if (!calle || !colonia || !codigo_postal || !municipio || !estado) {
+        return res.status(400).json({ error: 'calle, colonia, codigo_postal, municipio y estado son obligatorios en domicilio' });
+      }
+      if (!/^\d{5}$/.test(codigo_postal)) {
+        return res.status(400).json({ error: 'Código postal inválido (deben ser 5 dígitos)' });
+      }
+    }
 
-    const existe = await pool.query('SELECT id_cliente FROM clientes WHERE correo = $1', [correo]);
+    const existe = await cliente.query('SELECT id_cliente FROM clientes WHERE correo = $1', [correo]);
     if (existe.rows.length > 0) {
       return res.status(409).json({ error: 'El correo ya está registrado' });
     }
 
     const contrasenaHash = await bcrypt.hash(contrasena, 10);
-    const rolCliente = await pool.query("SELECT id_rol FROM roles WHERE nombre_rol = 'cliente'");
+    const rolCliente = await cliente.query("SELECT id_rol FROM roles WHERE nombre_rol = 'cliente'");
 
-    const insert = await pool.query(
+    await cliente.query('BEGIN');
+
+    const insert = await cliente.query(
       `INSERT INTO clientes (nombre, apellido_paterno, apellido_materno, correo, telefono, contrasena_hash, id_rol)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id_cliente, nombre, apellido_paterno, apellido_materno, correo, telefono`,
       [nombre, apellido_paterno, apellido_materno || null, correo, telefono || null, contrasenaHash, rolCliente.rows[0].id_rol]
     );
 
-    res.status(201).json({ mensaje: 'Usuario registrado', usuario: insert.rows[0] });
+    let nuevoDomicilio = null;
+    if (domicilio) {
+      const d = await cliente.query(
+        `INSERT INTO domicilios (id_cliente, nombre, calle, numero, colonia, codigo_postal, municipio, estado, pais, telefono_contacto)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         RETURNING *`,
+        [
+          insert.rows[0].id_cliente,
+          domicilio.nombre || null,
+          domicilio.calle,
+          domicilio.numero || null,
+          domicilio.colonia,
+          domicilio.codigo_postal,
+          domicilio.municipio,
+          domicilio.estado,
+          domicilio.pais || 'México',
+          domicilio.telefono_contacto || null,
+        ]
+      );
+      nuevoDomicilio = d.rows[0];
+    }
+
+    await cliente.query('COMMIT');
+
+    res.status(201).json({ mensaje: 'Usuario registrado', usuario: insert.rows[0], domicilio: nuevoDomicilio });
   } catch (error) {
+    await cliente.query('ROLLBACK');
     res.status(500).json({ error: error.message });
+  } finally {
+    cliente.release();
   }
 }
 
