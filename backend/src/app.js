@@ -9,6 +9,7 @@ import bolsaRutas from './rutas/bolsa.js';
 import ordenesRutas from './rutas/ordenes.js';
 import clientesRutas from './rutas/clientes.js';
 import domiciliosRutas from './rutas/domicilios.js';
+import uploadRutas from './rutas/upload.js';
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/api/bolsa', bolsaRutas);
 app.use('/api/ordenes', ordenesRutas);
 app.use('/api/clientes', clientesRutas);
 app.use('/api/domicilios', domiciliosRutas);
+app.use('/api/upload', uploadRutas);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada' });

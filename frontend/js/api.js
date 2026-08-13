@@ -51,6 +51,33 @@ async function peticion(ruta, opciones = {}) {
   return respuesta.json();
 }
 
+async function subirImagenDrive(archivo, categoria) {
+  const datos = new FormData();
+  datos.append('imagen', archivo);
+  datos.append('categoria', categoria);
+
+  const cabeceras = {};
+  const token = obtenerToken();
+  if (token) cabeceras.Authorization = `Bearer ${token}`;
+
+  let respuesta;
+  try {
+    respuesta = await fetch(`${API_URL}/upload/imagen`, { method: 'POST', headers: cabeceras, body: datos });
+  } catch {
+    throw new Error('No se pudo conectar con el servidor. Verifica que el backend esté en marcha.');
+  }
+
+  const detalle = await respuesta.json().catch(() => null);
+  if (!respuesta.ok) {
+    if (respuesta.status === 401) {
+      cerrarSesion();
+      throw new Error('Tu sesión expiró. Inicia sesión de nuevo.');
+    }
+    throw new Error(detalle?.error || `Error al subir la imagen (${respuesta.status})`);
+  }
+  return detalle;
+}
+
 function formatearPrecio(monto) {
   return new Intl.NumberFormat('es-MX', {
     style: 'currency',

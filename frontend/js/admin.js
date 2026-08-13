@@ -132,8 +132,16 @@ async function mostrarFormularioArticulo() {
       <input type="text" class="form-control" id="art-marca">
     </div>
     <div class="campo-form mb-2">
-      <label>Imagen (URL)</label>
-      <input type="text" class="form-control" id="art-imagen">
+      <label>Imagen del producto</label>
+      <input type="file" class="d-none" id="art-imagen-input" accept="image/jpeg,image/png,image/webp,image/gif">
+      <div class="d-flex align-items-center gap-3">
+        <button type="button" class="btn-ghost btn-sm" id="btn-seleccionar-imagen">
+          <i class="bi bi-image me-1"></i>Seleccionar imagen
+        </button>
+        <img id="art-imagen-preview" class="d-none" alt="Vista previa"
+             style="width:64px;height:64px;object-fit:cover;border:1px solid var(--borde);">
+      </div>
+      <div class="small text-muted mt-1">La imagen se sube a Google Drive y su URL se guarda con el producto.</div>
     </div>`;
   overlay.querySelector('.modal-sistema-acciones').innerHTML = `
     <button type="button" class="btn-ghost btn-sm px-4 modal-cancelar">Cancelar</button>
@@ -149,19 +157,43 @@ async function mostrarFormularioArticulo() {
       precio_mxn: Number(document.getElementById('art-precio').value),
       existencias: Number(document.getElementById('art-existencias').value) || 0,
       marca: document.getElementById('art-marca').value.trim() || null,
-      imagen_url: document.getElementById('art-imagen').value.trim() || null,
+      imagen_url: null,
     };
     if (!cuerpo.nombre || !cuerpo.id_categoria || isNaN(cuerpo.precio_mxn)) {
       mostrarAlerta('Datos incompletos', 'Nombre, categoría y precio son obligatorios.', 'error');
       return;
     }
+    const archivo = document.getElementById('art-imagen-input').files[0];
+    const botonGuardar = overlay.querySelector('.modal-guardar');
     try {
+      if (archivo) {
+        const nombreCategoria = document.getElementById('art-categoria').selectedOptions[0]?.text || 'Otros';
+        botonGuardar.disabled = true;
+        botonGuardar.textContent = 'Subiendo imagen...';
+        const subida = await subirImagenDrive(archivo, nombreCategoria);
+        cuerpo.imagen_url = subida.imagen_url;
+      }
       await peticion('/articulos', { method: 'POST', body: JSON.stringify(cuerpo) });
       overlay.classList.remove('visible');
       mostrarAlerta('Artículo creado', 'El artículo se publicó correctamente.', 'exito');
       cargarArticulosAdmin();
     } catch (error) {
+      botonGuardar.disabled = false;
+      botonGuardar.textContent = 'Guardar';
       mostrarAlerta('No se pudo crear', error.message, 'error');
+    }
+  });
+
+  const inputImagen = overlay.querySelector('#art-imagen-input');
+  overlay.querySelector('#btn-seleccionar-imagen').addEventListener('click', () => inputImagen.click());
+  inputImagen.addEventListener('change', () => {
+    const archivo = inputImagen.files[0];
+    const preview = overlay.querySelector('#art-imagen-preview');
+    if (archivo) {
+      preview.src = URL.createObjectURL(archivo);
+      preview.classList.remove('d-none');
+    } else {
+      preview.classList.add('d-none');
     }
   });
 }
