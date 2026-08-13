@@ -12,6 +12,7 @@ import domiciliosRutas from './rutas/domicilios.js';
 import uploadRutas from './rutas/upload.js';
 import vendedoresRutas from './rutas/vendedores.js';
 import bitacoraRutas from './rutas/bitacora.js';
+import imagenesRutas from './rutas/imagenes.js';
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use('/api/domicilios', domiciliosRutas);
 app.use('/api/upload', uploadRutas);
 app.use('/api/vendedores', vendedoresRutas);
 app.use('/api/bitacora', bitacoraRutas);
+app.use('/api/imagenes', imagenesRutas);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada' });

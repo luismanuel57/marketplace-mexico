@@ -1,5 +1,6 @@
 import pool from '../db.js';
 import { registrarBitacora } from '../servicios/bitacoraService.js';
+import { urlImagenLocal } from './imagenesController.js';
 
 const SELECT_BASE = `
   SELECT a.id_articulo, a.nombre, a.descripcion, a.precio_mxn, a.existencias,
@@ -8,6 +9,18 @@ const SELECT_BASE = `
   FROM articulos a
   JOIN categorias c ON c.id_categoria = a.id_categoria
 `;
+
+// Transforma la URL de Drive en la URL local del proxy para que el navegador
+// no descargue la imagen directo desde Google (bloquea por hotlink).
+// La BD siempre conserva la URL original; solo cambia la respuesta al cliente.
+function imagenParaRespuesta(imagenUrl) {
+  if (!imagenUrl) return null;
+  const coincidencia = imagenUrl.match(/[?&]id=([^&\s]+)/);
+  if (coincidencia) {
+    return urlImagenLocal(coincidencia[1]);
+  }
+  return imagenUrl;
+}
 
 export async function listar(req, res) {
   try {
@@ -43,7 +56,7 @@ export async function listar(req, res) {
     sql += destacado === 'true' ? ' ORDER BY a.precio_mxn DESC LIMIT 8' : ' ORDER BY a.nombre';
 
     const resultado = await pool.query(sql, valores);
-    res.json(resultado.rows);
+    res.json(resultado.rows.map((fila) => ({ ...fila, imagen_url: imagenParaRespuesta(fila.imagen_url) })));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -59,7 +72,8 @@ export async function detalle(req, res) {
     if (resultado.rows.length === 0) {
       return res.status(404).json({ error: 'Producto no encontrado' });
     }
-    res.json(resultado.rows[0]);
+    const fila = resultado.rows[0];
+    res.json({ ...fila, imagen_url: imagenParaRespuesta(fila.imagen_url) });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -112,7 +126,10 @@ export async function crear(req, res) {
       ip: req.ip,
     });
 
-    res.status(201).json({ mensaje: 'Producto creado', articulo: resultado.rows[0] });
+    res.status(201).json({
+      mensaje: 'Producto creado',
+      articulo: { ...resultado.rows[0], imagen_url: imagenParaRespuesta(resultado.rows[0].imagen_url) },
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -159,7 +176,10 @@ export async function modificar(req, res) {
       ip: req.ip,
     });
 
-    res.json({ mensaje: 'Producto actualizado', articulo: resultado.rows[0] });
+    res.json({
+      mensaje: 'Producto actualizado',
+      articulo: { ...resultado.rows[0], imagen_url: imagenParaRespuesta(resultado.rows[0].imagen_url) },
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
