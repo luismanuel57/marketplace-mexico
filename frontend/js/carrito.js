@@ -335,9 +335,9 @@ function mostrarPasoPago(overlay, idDomicilio) {
   const expiracion = document.getElementById('pago-expiracion');
   const cvv = document.getElementById('pago-cvv');
 
-  // Formato en vivo: solo dígitos, agrupados de 4 en 4.
+  // Formato en vivo: solo dígitos, agrupados de 4 en 4 (hasta 19 dígitos).
   numero.addEventListener('input', () => {
-    numero.value = numero.value.replace(/\D/g, '').slice(0, 16).replace(/(\d{4})(?=\d)/g, '$1 ');
+    numero.value = numero.value.replace(/\D/g, '').slice(0, 19).replace(/(\d{4})(?=\d)/g, '$1 ');
   });
   expiracion.addEventListener('input', () => {
     let valor = expiracion.value.replace(/\D/g, '').slice(0, 4);
@@ -379,6 +379,11 @@ function mostrarPasoPago(overlay, idDomicilio) {
 
     if (validaciones.includes(false)) return;
 
+    // Evita doble clic: deshabilita el botón mientras se genera el pedido.
+    const botonPagar = overlay.querySelector('.modal-pagar');
+    botonPagar.disabled = true;
+    botonPagar.textContent = 'Procesando...';
+
     try {
       const resultado = await peticion('/ordenes', {
         method: 'POST',
@@ -389,6 +394,8 @@ function mostrarPasoPago(overlay, idDomicilio) {
       mostrarAlerta('Pedido generado', `Tu pedido ${resultado.orden.folio_orden} fue creado con éxito.`, 'exito');
       setTimeout(() => { window.location.href = 'pedidos.html'; }, 1200);
     } catch (error) {
+      botonPagar.disabled = false;
+      botonPagar.textContent = 'Pagar';
       mostrarAlerta('No se pudo generar', error.message, 'error');
     }
   });
