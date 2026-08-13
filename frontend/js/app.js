@@ -24,12 +24,21 @@ function actualizarNavbar() {
   }
 }
 
-function actualizarContadorBolsa() {
+async function actualizarContadorBolsa() {
   const contador = document.getElementById('contador-bolsa');
   if (!contador) return;
-  const bolsa = JSON.parse(localStorage.getItem('bolsa') || '[]');
-  const total = bolsa.reduce((suma, item) => suma + (item.cantidad || 1), 0);
-  contador.textContent = total;
+  const usuario = obtenerUsuario();
+  if (!usuario) {
+    contador.textContent = '0';
+    return;
+  }
+  try {
+    const bolsa = await peticion('/bolsa');
+    const total = bolsa.articulos.reduce((suma, item) => suma + item.cantidad, 0);
+    contador.textContent = total;
+  } catch {
+    contador.textContent = '0';
+  }
 }
 
 async function cargarCategorias() {
@@ -97,9 +106,6 @@ async function agregarArticulo(idArticulo) {
   }
   try {
     await peticion('/bolsa', { method: 'POST', body: JSON.stringify({ id_articulo: idArticulo, cantidad: 1 }) });
-    const bolsa = JSON.parse(localStorage.getItem('bolsa') || '[]');
-    bolsa.push({ id_articulo: idArticulo, cantidad: 1 });
-    localStorage.setItem('bolsa', JSON.stringify(bolsa));
     actualizarContadorBolsa();
     mostrarAlerta('Agregado', 'El artículo se agregó a tu bolsa.', 'exito');
   } catch (error) {

@@ -75,9 +75,6 @@ async function cargarDetalle() {
           method: 'POST',
           body: JSON.stringify({ id_articulo: articulo.id_articulo, cantidad }),
         });
-        const bolsa = JSON.parse(localStorage.getItem('bolsa') || '[]');
-        bolsa.push({ id_articulo: articulo.id_articulo, cantidad });
-        localStorage.setItem('bolsa', JSON.stringify(bolsa));
         actualizarContadorBolsa();
         mostrarAlerta('Agregado', 'El artículo se agregó a tu bolsa.', 'exito');
       } catch (error) {

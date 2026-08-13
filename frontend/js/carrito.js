@@ -66,6 +66,7 @@ async function cargarBolsa() {
         if (!confirmar) return;
         try {
           await peticion(`/bolsa/articulos/${idDetalle}`, { method: 'DELETE' });
+          actualizarContadorBolsa();
           cargarBolsa();
         } catch (error) {
           mostrarAlerta('No se pudo eliminar', error.message, 'error');
@@ -123,6 +124,7 @@ async function actualizarCantidad(idDetalle, delta) {
       method: 'PUT',
       body: JSON.stringify({ cantidad: nueva }),
     });
+    actualizarContadorBolsa();
     cargarBolsa();
   } catch (error) {
     mostrarAlerta('No se pudo actualizar', error.message, 'error');
@@ -254,17 +256,18 @@ async function generarPedido() {
         }
       }
 
-      overlay.classList.remove('visible');
-      try {
-        const resultado = await peticion('/ordenes', {
-          method: 'POST',
-          body: JSON.stringify({ id_domicilio: idDomicilio }),
-        });
-        mostrarAlerta('Pedido generado', `Tu pedido ${resultado.orden.folio_orden} fue creado con éxito.`, 'exito');
-        setTimeout(() => { window.location.href = 'pedidos.html'; }, 1200);
-      } catch (error) {
-        mostrarAlerta('No se pudo generar', error.message, 'error');
-      }
+        overlay.classList.remove('visible');
+        try {
+          const resultado = await peticion('/ordenes', {
+            method: 'POST',
+            body: JSON.stringify({ id_domicilio: idDomicilio }),
+          });
+          actualizarContadorBolsa();
+          mostrarAlerta('Pedido generado', `Tu pedido ${resultado.orden.folio_orden} fue creado con éxito.`, 'exito');
+          setTimeout(() => { window.location.href = 'pedidos.html'; }, 1200);
+        } catch (error) {
+          mostrarAlerta('No se pudo generar', error.message, 'error');
+        }
     });
   } catch (error) {
     mostrarAlerta('No se pudo generar', error.message, 'error');
