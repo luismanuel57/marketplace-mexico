@@ -59,12 +59,18 @@ async function cargarArticulosAdmin() {
         <div class="table-responsive">
           <table class="table table-hover mb-0">
             <thead class="small text-muted">
-              <tr><th>ID</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Existencias</th><th>Estatus</th><th></th></tr>
+              <tr><th>ID</th><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Existencias</th><th>Estatus</th><th></th></tr>
             </thead>
             <tbody>
               ${articulos.map((a) => `
                 <tr>
                   <td>${a.id_articulo}</td>
+                  <td>
+                    <img src="${a.imagen_url || 'https://placehold.co/40x40/f5f5f5/9a9a9a?text=?'}"
+                         alt="${a.nombre}" class="rounded"
+                         style="width:40px;height:40px;object-fit:cover;"
+                         onerror="this.onerror=null;this.src='https://placehold.co/40x40/f5f5f5/9a9a9a?text=?';">
+                  </td>
                   <td>${a.nombre}</td>
                   <td>${a.categoria}</td>
                   <td>${formatearPrecio(a.precio_mxn)}</td>
