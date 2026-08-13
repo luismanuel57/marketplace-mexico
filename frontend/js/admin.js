@@ -1,3 +1,5 @@
+const vistasCargadas = {};
+
 async function verificarAdmin() {
   const contenedor = document.getElementById('verificacion-admin');
   const usuario = obtenerUsuario();
@@ -21,6 +23,12 @@ async function verificarAdmin() {
     <div id="vista-pedidos" class="d-none"></div>
     <div id="vista-clientes" class="d-none"></div>`;
 
+  const cargarVista = {
+    'vista-articulos': cargarArticulosAdmin,
+    'vista-pedidos': cargarPedidosAdmin,
+    'vista-clientes': cargarClientesAdmin,
+  };
+
   document.querySelectorAll('#verificacion-admin .pestana-auth').forEach((pestana) => {
     pestana.addEventListener('click', () => {
       document.querySelectorAll('#verificacion-admin .pestana-auth').forEach((p) => p.classList.remove('activa'));
@@ -28,11 +36,16 @@ async function verificarAdmin() {
       document.querySelectorAll('#verificacion-admin [data-vista]').forEach((v) => {
         if (v.tagName === 'DIV') v.classList.add('d-none');
       });
-      document.getElementById(pestana.dataset.vista).classList.remove('d-none');
+      const vistaId = pestana.dataset.vista;
+      document.getElementById(vistaId).classList.remove('d-none');
+      if (!vistasCargadas[vistaId]) {
+        vistasCargadas[vistaId] = true;
+        cargarVista[vistaId]();
+      }
     });
   });
 
-  await Promise.all([cargarArticulosAdmin(), cargarPedidosAdmin(), cargarClientesAdmin()]);
+  cargarArticulosAdmin();
 }
 
 async function cargarArticulosAdmin() {
