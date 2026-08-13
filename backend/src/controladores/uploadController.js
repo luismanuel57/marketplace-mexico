@@ -1,5 +1,6 @@
 import multer from 'multer';
-import { subirImagenDrive } from '../servicios/driveService.js';
+import { subirImagenDrive, crearEstructuraCategorias } from '../servicios/driveService.js';
+import pool from '../db.js';
 
 const almacenamiento = multer.memoryStorage();
 
@@ -24,6 +25,10 @@ export async function subir(req, res) {
       return res.status(400).json({ error: 'No se recibió ningún archivo' });
     }
     const categoria = req.body.categoria || 'Otros';
+
+    const categorias = await pool.query('SELECT nombre FROM categorias ORDER BY nombre');
+    const nombres = categorias.rows.map((c) => c.nombre);
+    await crearEstructuraCategorias(nombres);
 
     const imagen = await subirImagenDrive(req.file, categoria);
 

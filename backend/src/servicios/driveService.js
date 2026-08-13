@@ -60,14 +60,39 @@ async function obtenerCarpetaRaiz(drive) {
   return id;
 }
 
+function slugCategoria(nombre) {
+  return nombre
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 async function obtenerCarpetaCategoria(drive, categoria) {
-  if (carpetasCategoriaCache.has(categoria)) return carpetasCategoriaCache.get(categoria);
+  const slug = slugCategoria(categoria);
+  if (carpetasCategoriaCache.has(slug)) return carpetasCategoriaCache.get(slug);
 
   const raizId = await obtenerCarpetaRaiz(drive);
-  const carpeta = await buscarCarpeta(drive, categoria, raizId);
-  const id = carpeta ? carpeta.id : await crearCarpeta(drive, categoria, raizId);
-  carpetasCategoriaCache.set(categoria, id);
+  const carpeta = await buscarCarpeta(drive, slug, raizId);
+  const id = carpeta ? carpeta.id : await crearCarpeta(drive, slug, raizId);
+  carpetasCategoriaCache.set(slug, id);
   return id;
+}
+
+export async function crearEstructuraCategorias(nombresCategorias) {
+  const cliente = obtenerClienteOAuth();
+  const drive = google.drive({ version: 'v3', auth: cliente });
+  const raizId = await obtenerCarpetaRaiz(drive);
+
+  for (const nombre of nombresCategorias) {
+    const slug = slugCategoria(nombre);
+    if (carpetasCategoriaCache.has(slug)) continue;
+    const carpeta = await buscarCarpeta(drive, slug, raizId);
+    const id = carpeta ? carpeta.id : await crearCarpeta(drive, slug, raizId);
+    carpetasCategoriaCache.set(slug, id);
+  }
 }
 
 function sanearNombre(original, mimetype) {
