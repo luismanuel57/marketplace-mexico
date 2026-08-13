@@ -316,7 +316,10 @@ async function cargarClientesAdmin() {
   try {
     const clientes = await peticion('/clientes');
     contenedor.innerHTML = `
-      <h2 class="h5 mb-3">Clientes</h2>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 mb-0">Clientes</h2>
+        <button type="button" class="btn-negro btn-sm" id="btn-crear-cuenta">+ Crear cuenta</button>
+      </div>
       <div class="tarjeta p-0">
         <div class="table-responsive">
           <table class="table table-hover mb-0">
@@ -336,9 +339,132 @@ async function cargarClientesAdmin() {
           </table>
         </div>
       </div>`;
+
+    document.getElementById('btn-crear-cuenta').addEventListener('click', mostrarModalCrearCuenta);
   } catch (error) {
     contenedor.innerHTML = `<p class="text-danger">${error.message}</p>`;
   }
+}
+
+function marcarCampoAdmin(input, valido, mensaje) {
+  input.classList.toggle('invalido', !valido);
+  const contenedor = input.closest('.campo-form')?.querySelector('.mensaje-error');
+  if (!contenedor) return valido;
+  if (mensaje !== undefined) contenedor.textContent = mensaje;
+  contenedor.classList.toggle('visible', !valido);
+  return valido;
+}
+
+function mostrarModalCrearCuenta() {
+  const overlay = crearModalSistema();
+
+  overlay.querySelector('.modal-sistema-titulo').textContent = 'Crear cuenta';
+  overlay.querySelector('.modal-sistema-mensaje').innerHTML = `
+    <div class="campo-form mb-2">
+      <label>Nombre *</label>
+      <input type="text" class="form-control" id="cue-nombre" maxlength="40">
+      <p class="mensaje-error">Campo obligatorio.</p>
+    </div>
+    <div class="campo-form mb-2">
+      <label>Apellido paterno *</label>
+      <input type="text" class="form-control" id="cue-apellido" maxlength="40">
+      <p class="mensaje-error">Campo obligatorio.</p>
+    </div>
+    <div class="campo-form mb-2">
+      <label>Apellido materno</label>
+      <input type="text" class="form-control" id="cue-apellido-materno" maxlength="40">
+      <p class="mensaje-error">Solo letras, espacios y guiones (máximo 40 caracteres).</p>
+    </div>
+    <div class="campo-form mb-2">
+      <label>Correo electrónico *</label>
+      <input type="email" class="form-control" id="cue-correo" placeholder="correo@ejemplo.mx">
+      <p class="mensaje-error">Correo electrónico inválido.</p>
+    </div>
+    <div class="campo-form mb-2">
+      <label>Teléfono</label>
+      <input type="tel" class="form-control" id="cue-telefono" inputmode="numeric" maxlength="10" placeholder="3334567890">
+      <p class="mensaje-error">El teléfono debe tener 10 dígitos (solo números).</p>
+    </div>
+    <div class="campo-form mb-2">
+      <label>Contraseña *</label>
+      <input type="password" class="form-control" id="cue-contrasena" placeholder="Mínimo 6 caracteres">
+      <p class="mensaje-error">Debe tener al menos 6 caracteres.</p>
+    </div>
+    <div class="campo-form mb-2">
+      <label>Tipo de cuenta</label>
+      <select class="form-select" id="cue-rol">
+        <option value="cliente" selected>Comprador</option>
+        <option value="vendedor">Vendedor</option>
+      </select>
+    </div>`;
+  overlay.querySelector('.modal-sistema-acciones').innerHTML = `
+    <button type="button" class="btn-ghost btn-sm px-4 modal-cancelar">Cancelar</button>
+    <button type="button" class="btn-negro btn-sm px-4 modal-guardar">Crear cuenta</button>`;
+  overlay.classList.add('visible');
+
+  const REGEX_SOLO_LETRAS = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü' -]{1,40}$/;
+  const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const REGEX_TELEFONO = /^\d{10}$/;
+
+  overlay.querySelector('.modal-cancelar').addEventListener('click', () => overlay.classList.remove('visible'));
+  overlay.querySelector('.modal-guardar').addEventListener('click', async () => {
+    const nombre = document.getElementById('cue-nombre');
+    const apellido = document.getElementById('cue-apellido');
+    const apellidoMaterno = document.getElementById('cue-apellido-materno');
+    const correo = document.getElementById('cue-correo');
+    const telefono = document.getElementById('cue-telefono');
+    const contrasena = document.getElementById('cue-contrasena');
+
+    const validarTexto = (input, obligatorio) => {
+      const valor = input.value.trim();
+      if (!valor) return marcarCampoAdmin(input, !obligatorio, 'Campo obligatorio.');
+      return marcarCampoAdmin(input, REGEX_SOLO_LETRAS.test(valor), 'Solo letras, espacios y guiones (máximo 40 caracteres).');
+    };
+    const validarTelefono = (input) => {
+      const valor = input.value.replace(/[\s-]/g, '');
+      if (!valor) return marcarCampoAdmin(input, true); // opcional
+      return marcarCampoAdmin(input, REGEX_TELEFONO.test(valor), 'El teléfono debe tener 10 dígitos (solo números).');
+    };
+    const validarCorreo = (input) => marcarCampoAdmin(input, REGEX_CORREO.test(input.value.trim()), 'Correo electrónico inválido.');
+
+    const nombreValido = validarTexto(nombre, true);
+    const apellidoValido = validarTexto(apellido, true);
+    const apellidoMaternoValido = validarTexto(apellidoMaterno, false);
+    const telefonoValido = validarTelefono(telefono);
+    const correoValido = validarCorreo(correo);
+    const contrasenaValida = contrasena.value.length >= 6;
+    marcarCampoAdmin(contrasena, contrasenaValida, 'Debe tener al menos 6 caracteres.');
+
+    if (!nombreValido || !apellidoValido || !apellidoMaternoValido || !telefonoValido ||
+        !correoValido || !contrasenaValida) {
+      mostrarAlerta('Datos incompletos', 'Revisa los campos marcados.', 'error');
+      return;
+    }
+
+    const botonGuardar = overlay.querySelector('.modal-guardar');
+    try {
+      botonGuardar.disabled = true;
+      await peticion('/auth/registro', {
+        method: 'POST',
+        body: JSON.stringify({
+          nombre: nombre.value.trim(),
+          apellido_paterno: apellido.value.trim(),
+          apellido_materno: apellidoMaterno.value.trim() || null,
+          correo: correo.value.trim(),
+          telefono: telefono.value.trim() || null,
+          contrasena: contrasena.value,
+          rol: document.getElementById('cue-rol').value,
+          domicilio: null,
+        }),
+      });
+      overlay.classList.remove('visible');
+      mostrarAlerta('Cuenta creada', 'La cuenta se creó correctamente.', 'exito');
+      cargarClientesAdmin();
+    } catch (error) {
+      botonGuardar.disabled = false;
+      mostrarAlerta('No se pudo crear la cuenta', error.message, 'error');
+    }
+  });
 }
 
 async function cargarVendedoresAdmin() {

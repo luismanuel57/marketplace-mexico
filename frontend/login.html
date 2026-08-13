@@ -59,21 +59,23 @@
         <div class="row g-3">
           <div class="col-md-6 campo-form">
             <label for="reg-nombre">Nombre *</label>
-            <input type="text" class="form-control" id="reg-nombre" placeholder="Ana">
+            <input type="text" class="form-control" id="reg-nombre" placeholder="Ana" maxlength="40">
             <p class="mensaje-error">Campo obligatorio.</p>
           </div>
           <div class="col-md-6 campo-form">
             <label for="reg-apellido">Apellido paterno *</label>
-            <input type="text" class="form-control" id="reg-apellido" placeholder="Ramírez">
+            <input type="text" class="form-control" id="reg-apellido" placeholder="Ramírez" maxlength="40">
             <p class="mensaje-error">Campo obligatorio.</p>
           </div>
           <div class="col-md-6 campo-form">
             <label for="reg-apellido-materno">Apellido materno</label>
-            <input type="text" class="form-control" id="reg-apellido-materno" placeholder="Pérez">
+            <input type="text" class="form-control" id="reg-apellido-materno" placeholder="Pérez" maxlength="40">
+            <p class="mensaje-error">Solo letras, espacios y guiones (máximo 40 caracteres).</p>
           </div>
           <div class="col-md-6 campo-form">
             <label for="reg-telefono">Teléfono</label>
-            <input type="tel" class="form-control" id="reg-telefono" placeholder="3334567890">
+            <input type="tel" class="form-control" id="reg-telefono" placeholder="3334567890" inputmode="numeric" maxlength="10">
+            <p class="mensaje-error">El teléfono debe tener 10 dígitos (solo números).</p>
           </div>
           <div class="col-12 campo-form">
             <label for="reg-correo">Correo electrónico *</label>
@@ -90,14 +92,6 @@
             <input type="password" class="form-control" id="reg-contrasena2" placeholder="Repite tu contraseña">
             <p class="mensaje-error">Las contraseñas no coinciden.</p>
           </div>
-        </div>
-
-        <div class="campo-form mt-4">
-          <label for="reg-rol">Tipo de cuenta</label>
-          <select class="form-select" id="reg-rol">
-            <option value="cliente" selected>Cliente (comprar en el tianguis)</option>
-            <option value="vendedor">Vendedor (publicar y vender mis propios artículos)</option>
-          </select>
         </div>
 
         <h2 class="h6 mt-4 mb-3 text-uppercase text-muted">Datos de envío</h2>
@@ -160,8 +154,8 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="js/api.js?v=20260814"></script>
-  <script src="js/ui.js?v=20260814"></script>
-  <script src="js/auth.js?v=20260814"></script>
+  <script src="js/api.js?v=20260815"></script>
+  <script src="js/ui.js?v=20260815"></script>
+  <script src="js/auth.js?v=20260815"></script>
 </body>
 </html>

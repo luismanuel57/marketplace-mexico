@@ -139,23 +139,72 @@ function validarDireccion() {
   return validos.every(Boolean) && cpValido;
 }
 
+const REGEX_SOLO_LETRAS = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü' -]{1,40}$/;
+const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const REGEX_TELEFONO = /^\d{10}$/;
+
+function validarTextoCampo(input, obligatorio) {
+  const valor = input.value.trim();
+  if (!valor) {
+    const mensaje = input.closest('.campo-form')?.querySelector('.mensaje-error');
+    if (mensaje) mensaje.textContent = 'Campo obligatorio.';
+    return marcarCampo(input, !obligatorio);
+  }
+  const valido = REGEX_SOLO_LETRAS.test(valor);
+  if (!valido) {
+    mostrarErrorCampo(input, 'Solo letras, espacios y guiones (máximo 40 caracteres).');
+  } else {
+    marcarCampo(input, true);
+  }
+  return valido;
+}
+
+function validarTelefonoCampo(input) {
+  const valor = input.value.replace(/[\s-]/g, '');
+  if (!valor) return marcarCampo(input, true); // opcional
+  const valido = REGEX_TELEFONO.test(valor);
+  if (!valido) {
+    mostrarErrorCampo(input, 'El teléfono debe tener 10 dígitos (solo números).');
+  } else {
+    marcarCampo(input, true);
+  }
+  return valido;
+}
+
+function validarCorreoCampo(input) {
+  const valido = REGEX_CORREO.test(input.value.trim());
+  if (!valido) {
+    mostrarErrorCampo(input, 'Correo electrónico inválido.');
+  } else {
+    marcarCampo(input, true);
+  }
+  return valido;
+}
+
 async function registrarUsuario(e) {
   e.preventDefault();
-  const campos = ['reg-nombre', 'reg-apellido', 'reg-correo', 'reg-contrasena', 'reg-contrasena2'];
-  const validos = campos.map((id) => validarCampo(document.getElementById(id)));
 
+  const nombre = document.getElementById('reg-nombre');
+  const apellido = document.getElementById('reg-apellido');
+  const apellidoMaterno = document.getElementById('reg-apellido-materno');
+  const telefono = document.getElementById('reg-telefono');
   const correo = document.getElementById('reg-correo');
-  const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.value.trim());
-  marcarCampo(correo, correoValido);
-
   const contrasena = document.getElementById('reg-contrasena');
   const contrasena2 = document.getElementById('reg-contrasena2');
-  const coinciden = contrasena.value === contrasena2.value;
-  marcarCampo(contrasena, contrasena.value.length >= 6);
-  marcarCampo(contrasena2, coinciden);
 
-  if (!validos.every(Boolean) || !correoValido || contrasena.value.length < 6 || !coinciden) {
-    mostrarAlerta('Datos incompletos', 'Revisa los campos marcados. La contraseña debe coincidir y tener al menos 6 caracteres.', 'error');
+  const nombreValido = validarTextoCampo(nombre, true);
+  const apellidoValido = validarTextoCampo(apellido, true);
+  const apellidoMaternoValido = validarTextoCampo(apellidoMaterno, false);
+  const telefonoValido = validarTelefonoCampo(telefono);
+  const correoValido = validarCorreoCampo(correo);
+  const contrasenaValida = contrasena.value.length >= 6;
+  const contrasenaCoincide = contrasena.value === contrasena2.value;
+  marcarCampo(contrasena, contrasenaValida);
+  marcarCampo(contrasena2, contrasenaCoincide);
+
+  if (!nombreValido || !apellidoValido || !apellidoMaternoValido || !telefonoValido ||
+      !correoValido || !contrasenaValida || !contrasenaCoincide) {
+    mostrarAlerta('Datos incompletos', 'Revisa los campos marcados.', 'error');
     return;
   }
 
@@ -166,13 +215,14 @@ async function registrarUsuario(e) {
   }
 
   const cuerpo = {
-    nombre: document.getElementById('reg-nombre').value.trim(),
-    apellido_paterno: document.getElementById('reg-apellido').value.trim(),
-    apellido_materno: document.getElementById('reg-apellido-materno').value.trim() || null,
+    nombre: nombre.value.trim(),
+    apellido_paterno: apellido.value.trim(),
+    apellido_materno: apellidoMaterno.value.trim() || null,
     correo: correo.value.trim(),
-    telefono: document.getElementById('reg-telefono').value.trim() || null,
+    telefono: telefono.value.trim() || null,
     contrasena: contrasena.value,
-    rol: document.getElementById('reg-rol').value,
+    // El registro público siempre crea un comprador (rol 'cliente' en el sistema).
+    rol: 'cliente',
     domicilio: leerDireccion(),
   };
 
