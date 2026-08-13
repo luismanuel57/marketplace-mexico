@@ -77,6 +77,7 @@ async function cargarArticulosAdmin() {
                   <td>${a.existencias}</td>
                   <td><span class="estado-pastilla">${a.estatus}</span></td>
                   <td>
+                    <button type="button" class="btn-ghost btn-sm editar-articulo" data-id="${a.id_articulo}">Editar</button>
                     ${a.estatus === 'activo'
                       ? `<button type="button" class="btn-ghost btn-sm desactivar-articulo" data-id="${a.id_articulo}">Desactivar</button>`
                       : ''}
@@ -87,7 +88,14 @@ async function cargarArticulosAdmin() {
         </div>
       </div>`;
 
-    document.getElementById('btn-nuevo-articulo').addEventListener('click', mostrarFormularioArticulo);
+    document.getElementById('btn-nuevo-articulo').addEventListener('click', () => mostrarFormularioArticulo());
+    document.querySelectorAll('.editar-articulo').forEach((boton) => {
+      boton.addEventListener('click', () => {
+        const art = articulos.find((a) => a.id_articulo === Number(boton.dataset.id));
+        if (!art) return;
+        mostrarFormularioArticulo(art);
+      });
+    });
     document.querySelectorAll('.desactivar-articulo').forEach((boton) => {
       boton.addEventListener('click', async () => {
         const confirmar = await mostrarConfirmacion('Desactivar artículo', 'El artículo dejará de estar visible. ¿Continuar?');
@@ -106,20 +114,31 @@ async function cargarArticulosAdmin() {
   }
 }
 
-async function mostrarFormularioArticulo() {
+async function mostrarFormularioArticulo(articulo = null) {
   const overlay = crearModalSistema();
-  const categorias = await peticion('/categorias');
-  const opciones = categorias.map((c) => `<option value="${c.id_categoria}">${c.nombre}</option>`).join('');
+  const esEdicion = !!articulo;
+  const datos = articulo || {};
+  const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  let categorias;
+  try {
+    categorias = await peticion('/categorias');
+  } catch (error) {
+    mostrarAlerta('Error', error.message, 'error');
+    return;
+  }
+  const opciones = categorias
+    .map((c) => `<option value="${c.id_categoria}" ${c.id_categoria === datos.id_categoria ? 'selected' : ''}>${esc(c.nombre)}</option>`)
+    .join('');
 
-  overlay.querySelector('.modal-sistema-titulo').textContent = 'Nuevo artículo';
+  overlay.querySelector('.modal-sistema-titulo').textContent = esEdicion ? 'Editar artículo' : 'Nuevo artículo';
   overlay.querySelector('.modal-sistema-mensaje').innerHTML = `
     <div class="campo-form mb-2">
       <label>Nombre *</label>
-      <input type="text" class="form-control" id="art-nombre">
+      <input type="text" class="form-control" id="art-nombre" value="${esc(datos.nombre)}">
     </div>
     <div class="campo-form mb-2">
       <label>Descripción</label>
-      <textarea class="form-control" id="art-descripcion" rows="2"></textarea>
+      <textarea class="form-control" id="art-descripcion" rows="2">${esc(datos.descripcion)}</textarea>
     </div>
     <div class="campo-form mb-2">
       <label>Categoría *</label>
@@ -127,15 +146,15 @@ async function mostrarFormularioArticulo() {
     </div>
     <div class="campo-form mb-2">
       <label>Precio (MXN) *</label>
-      <input type="number" class="form-control" id="art-precio" min="0" step="0.01">
+      <input type="number" class="form-control" id="art-precio" min="0" step="0.01" value="${esc(datos.precio_mxn)}">
     </div>
     <div class="campo-form mb-2">
       <label>Existencias</label>
-      <input type="number" class="form-control" id="art-existencias" min="0">
+      <input type="number" class="form-control" id="art-existencias" min="0" value="${esc(datos.existencias)}">
     </div>
     <div class="campo-form mb-2">
       <label>Marca</label>
-      <input type="text" class="form-control" id="art-marca">
+      <input type="text" class="form-control" id="art-marca" value="${esc(datos.marca)}">
     </div>
     <div class="campo-form mb-2">
       <label>Imagen del producto</label>
@@ -152,18 +171,23 @@ async function mostrarFormularioArticulo() {
   overlay.querySelector('.modal-sistema-acciones').innerHTML = `
     <button type="button" class="btn-ghost btn-sm px-4 modal-cancelar">Cancelar</button>
     <button type="button" class="btn-negro btn-sm px-4 modal-guardar">Guardar</button>`;
+  if (datos.imagen_url) {
+    const preview = overlay.querySelector('#art-imagen-preview');
+    preview.src = datos.imagen_url;
+    preview.classList.remove('d-none');
+  }
   overlay.classList.add('visible');
 
   overlay.querySelector('.modal-cancelar').addEventListener('click', () => overlay.classList.remove('visible'));
   overlay.querySelector('.modal-guardar').addEventListener('click', async () => {
     const cuerpo = {
       nombre: document.getElementById('art-nombre').value.trim(),
-      descripcion: document.getElementById('art-descripcion').value.trim() || null,
+      descripcion: document.getElementById('art-descripcion').value.trim(),
       id_categoria: Number(document.getElementById('art-categoria').value),
       precio_mxn: Number(document.getElementById('art-precio').value),
       existencias: Number(document.getElementById('art-existencias').value) || 0,
-      marca: document.getElementById('art-marca').value.trim() || null,
-      imagen_url: null,
+      marca: document.getElementById('art-marca').value.trim(),
+      imagen_url: esEdicion ? (articulo.imagen_url ?? null) : null,
     };
     if (!cuerpo.nombre || !cuerpo.id_categoria || isNaN(cuerpo.precio_mxn)) {
       mostrarAlerta('Datos incompletos', 'Nombre, categoría y precio son obligatorios.', 'error');
@@ -179,14 +203,18 @@ async function mostrarFormularioArticulo() {
         const subida = await subirImagenDrive(archivo, nombreCategoria);
         cuerpo.imagen_url = subida.imagen_url;
       }
-      await peticion('/articulos', { method: 'POST', body: JSON.stringify(cuerpo) });
+      if (esEdicion) {
+        await peticion(`/articulos/${articulo.id_articulo}`, { method: 'PUT', body: JSON.stringify(cuerpo) });
+      } else {
+        await peticion('/articulos', { method: 'POST', body: JSON.stringify(cuerpo) });
+      }
       overlay.classList.remove('visible');
-      mostrarAlerta('Artículo creado', 'El artículo se publicó correctamente.', 'exito');
+      mostrarAlerta(esEdicion ? 'Artículo actualizado' : 'Artículo creado', esEdicion ? 'Los cambios se guardaron correctamente.' : 'El artículo se publicó correctamente.', 'exito');
       cargarArticulosAdmin();
     } catch (error) {
       botonGuardar.disabled = false;
       botonGuardar.textContent = 'Guardar';
-      mostrarAlerta('No se pudo crear', error.message, 'error');
+      mostrarAlerta(esEdicion ? 'No se pudo actualizar' : 'No se pudo crear', error.message, 'error');
     }
   });
 
