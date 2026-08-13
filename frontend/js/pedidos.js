@@ -63,7 +63,7 @@ async function cargarPedidos() {
                ${detalle.municipio}, ${detalle.estado_domicilio},<br>
                C.P. ${detalle.codigo_postal}, ${detalle.pais}
              </small>`,
-            'info');
+            'info', true);
         } catch (error) {
           mostrarAlerta('Error', error.message, 'error');
         }

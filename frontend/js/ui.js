@@ -17,7 +17,7 @@ function crearModalSistema() {
   return contenedor;
 }
 
-function configurarModal(tipo, titulo, mensaje) {
+function configurarModal(tipo, titulo, mensaje, esHtml = false) {
   const overlay = crearModalSistema();
   const icone = overlay.querySelector('.modal-sistema-icone');
   icone.className = 'modal-sistema-icone ' + tipo;
@@ -26,7 +26,9 @@ function configurarModal(tipo, titulo, mensaje) {
     tipo === 'error' ? '<i class="bi bi-x-lg"></i>' :
     '<i class="bi bi-info-lg"></i>';
   overlay.querySelector('.modal-sistema-titulo').textContent = titulo;
-  overlay.querySelector('.modal-sistema-mensaje').textContent = mensaje;
+  const cuerpo = overlay.querySelector('.modal-sistema-mensaje');
+  if (esHtml) cuerpo.innerHTML = mensaje;
+  else cuerpo.textContent = mensaje;
   return overlay;
 }
 
@@ -44,8 +46,8 @@ function cerrarModal() {
   }
 }
 
-async function mostrarAlerta(titulo, mensaje, tipo = 'info') {
-  const overlay = configurarModal(tipo, titulo, mensaje);
+async function mostrarAlerta(titulo, mensaje, tipo = 'info', esHtml = false) {
+  const overlay = configurarModal(tipo, titulo, mensaje, esHtml);
   const acciones = overlay.querySelector('.modal-sistema-acciones');
   acciones.innerHTML = '<button type="button" class="btn-negro btn-sm px-4 modal-cerrar">Aceptar</button>';
   overlay.querySelector('.modal-cerrar').addEventListener('click', cerrarModal);
