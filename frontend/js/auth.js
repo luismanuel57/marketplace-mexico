@@ -177,9 +177,9 @@ async function registrarUsuario(e) {
     mostrarAlerta('Cuenta creada', 'Tu cuenta se creó correctamente. Ya puedes iniciar sesión.', 'exito');
     setTimeout(() => {
       document.querySelectorAll('.pestana-auth').forEach((p) => p.classList.remove('activa'));
-      document.querySelector('[data-vista="vista-login"]').classList.add('activa');
+      document.querySelector('[data-vista="form-login"]').classList.add('activa');
       document.querySelectorAll('.vista-auth').forEach((v) => v.classList.add('d-none'));
-      document.getElementById('vista-login').classList.remove('d-none');
+      document.getElementById('form-login').classList.remove('d-none');
       e.target.reset();
     }, 1200);
   } catch (error) {
@@ -192,10 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
   llenarEstados();
   const url = new URLSearchParams(window.location.search);
   if (url.get('registro')) {
-    document.querySelector('[data-vista="vista-registro"]').classList.add('activa');
+    document.querySelector('[data-vista="form-registro"]').classList.add('activa');
     document.querySelectorAll('.vista-auth').forEach((v) => v.classList.add('d-none'));
-    document.getElementById('vista-registro').classList.remove('d-none');
-    document.querySelector('[data-vista="vista-login"]').classList.remove('activa');
+    document.getElementById('form-registro').classList.remove('d-none');
+    document.querySelector('[data-vista="form-login"]').classList.remove('activa');
   }
 
   document.getElementById('form-login').addEventListener('submit', iniciarSesion);
