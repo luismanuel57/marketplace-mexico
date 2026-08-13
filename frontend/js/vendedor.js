@@ -1,3 +1,7 @@
+function esc(valor) {
+  return String(valor ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 function verificarVendedor() {
   const contenedor = document.getElementById('contenido-vendedor');
   const usuario = obtenerUsuario();
@@ -54,12 +58,17 @@ async function cargarArticulosVendedor() {
           </div>
         </div>`;
 
+    // El reporte de ventas es solo para vendedores (el admin no accede a
+    // /vendedores/mis-ventas, que responde 403; para él se omite la sección).
+    const ventasHtml = usuario.rol === 'vendedor' ? await seccionVentas() : '';
+
     contenedor.innerHTML = `
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="h5 mb-0">Mis artículos</h2>
         <button type="button" class="btn-negro btn-sm" id="btn-nuevo-articulo">+ Nuevo artículo</button>
       </div>
-      ${tabla}`;
+      ${tabla}
+      ${ventasHtml}`;
 
     document.getElementById('btn-nuevo-articulo').addEventListener('click', () => mostrarFormularioArticulo());
     document.querySelectorAll('.editar-articulo').forEach((boton) => {
@@ -100,6 +109,99 @@ async function cargarArticulosVendedor() {
     });
   } catch (error) {
     contenedor.innerHTML = `<p class="text-danger">${error.message}</p>`;
+  }
+}
+
+async function seccionVentas() {
+  try {
+    const ventas = await peticion('/vendedores/mis-ventas');
+
+    if (ventas.resumen.total_ordenes === 0) {
+      return `
+        <div class="mt-5">
+          <h2 class="h5 mb-3">Mis ventas</h2>
+          <div class="tarjeta p-4 text-center text-muted">Aún no tienes ventas. Cuando vendas productos verás aquí tu reporte.</div>
+        </div>`;
+    }
+
+    const tarjetas = `
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="tarjeta p-3 text-center">
+            <div class="small text-muted text-uppercase">Ingresos totales</div>
+            <div class="fs-5 fw-bold mt-1">${formatearPrecio(ventas.resumen.ingresos)}</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="tarjeta p-3 text-center">
+            <div class="small text-muted text-uppercase">Órdenes</div>
+            <div class="fs-5 fw-bold mt-1">${ventas.resumen.total_ordenes}</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="tarjeta p-3 text-center">
+            <div class="small text-muted text-uppercase">Artículos vendidos</div>
+            <div class="fs-5 fw-bold mt-1">${ventas.resumen.articulos_vendidos}</div>
+          </div>
+        </div>
+      </div>`;
+
+    const filasDia = ventas.por_dia.map((f) => `
+      <tr>
+        <td>${esc(f.dia)}</td>
+        <td>${f.ordenes}</td>
+        <td>${f.articulos}</td>
+        <td>${formatearPrecio(f.ingresos)}</td>
+      </tr>`).join('');
+
+    const filasTop = ventas.top_productos.map((p) => `
+      <tr>
+        <td>${esc(p.nombre)}</td>
+        <td>${p.pedidos}</td>
+        <td>${p.unidades}</td>
+        <td>${formatearPrecio(p.ingresos)}</td>
+      </tr>`).join('');
+
+    const tablaDia = ventas.por_dia.length === 0
+      ? '<div class="tarjeta p-4 text-center text-muted">No hay ventas en los últimos 30 días.</div>'
+      : `<div class="tarjeta p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="small text-muted">
+                <tr><th>Día</th><th>Órdenes</th><th>Artículos</th><th>Ingresos</th></tr>
+              </thead>
+              <tbody>${filasDia}</tbody>
+            </table>
+          </div>
+        </div>`;
+
+    const tablaTop = ventas.top_productos.length === 0
+      ? '<div class="tarjeta p-4 text-center text-muted">Aún no tienes productos vendidos.</div>'
+      : `<div class="tarjeta p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="small text-muted">
+                <tr><th>Producto</th><th>Pedidos</th><th>Unidades</th><th>Ingresos</th></tr>
+              </thead>
+              <tbody>${filasTop}</tbody>
+            </table>
+          </div>
+        </div>`;
+
+    return `
+      <div class="mt-5">
+        <h2 class="h5 mb-3">Mis ventas</h2>
+        ${tarjetas}
+        <h3 class="h6 text-uppercase text-muted mt-4 mb-2">Ventas por día (últimos 30 días)</h3>
+        ${tablaDia}
+        <h3 class="h6 text-uppercase text-muted mt-4 mb-2">Top productos</h3>
+        ${tablaTop}
+      </div>`;
+  } catch (error) {
+    return `
+      <div class="tarjeta p-4 text-center text-danger mt-5">
+        No se pudo cargar el reporte de ventas: ${esc(error.message)}
+      </div>`;
   }
 }
 
