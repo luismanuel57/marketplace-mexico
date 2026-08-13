@@ -302,8 +302,9 @@ function mostrarPasoPago(overlay, idDomicilio) {
     <div class="campo-form mb-2">
       <label>Número de tarjeta *</label>
       <input type="text" class="form-control" id="pago-numero" inputmode="numeric" maxlength="19"
-             placeholder="0000 0000 0000 0000" autocomplete="off">
+             placeholder="4111 1111 1111 1111" autocomplete="off">
       <small class="text-muted" id="aviso-pago-numero"></small>
+      <small class="text-muted d-block mt-1">Tarjeta de prueba: 4111 1111 1111 1111 (Visa)</small>
     </div>
     <div class="campo-form mb-2">
       <label>Titular *</label>
@@ -365,7 +366,7 @@ function mostrarPasoPago(overlay, idDomicilio) {
     const validaciones = [
       marcarCampo(numero, 'aviso-pago-numero',
         /^\d{13,19}$/.test(numeroLimpio) && luhnValido(numeroLimpio),
-        'Número de tarjeta inválido (13 a 19 dígitos).'),
+        'Número inválido (13-19 dígitos y verificación de tarjeta). Prueba: 4111 1111 1111 1111'),
       marcarCampo(document.getElementById('pago-titular'), 'aviso-pago-titular',
         titular.length >= 3,
         'Escribe el nombre del titular (mínimo 3 letras).'),
