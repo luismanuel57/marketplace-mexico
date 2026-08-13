@@ -19,17 +19,20 @@ async function verificarAdmin() {
       <button type="button" class="pestana-auth" data-vista="vista-pedidos">Pedidos</button>
       <button type="button" class="pestana-auth" data-vista="vista-clientes">Clientes</button>
       <button type="button" class="pestana-auth" data-vista="vista-vendedores">Vendedores</button>
+      <button type="button" class="pestana-auth" data-vista="vista-bitacora">Bitácora</button>
     </div>
     <div id="vista-articulos"></div>
     <div id="vista-pedidos" class="d-none"></div>
     <div id="vista-clientes" class="d-none"></div>
-    <div id="vista-vendedores" class="d-none"></div>`;
+    <div id="vista-vendedores" class="d-none"></div>
+    <div id="vista-bitacora" class="d-none"></div>`;
 
   const cargarVista = {
     'vista-articulos': cargarArticulosAdmin,
     'vista-pedidos': cargarPedidosAdmin,
     'vista-clientes': cargarClientesAdmin,
     'vista-vendedores': cargarVendedoresAdmin,
+    'vista-bitacora': cargarBitacoraAdmin,
   };
 
   document.querySelectorAll('#verificacion-admin .pestana-auth').forEach((pestana) => {
@@ -404,6 +407,66 @@ async function cargarVendedoresAdmin() {
           fila.querySelector('.articulos-vendedor-carga').textContent = error.message;
         }
       });
+    });
+  } catch (error) {
+    contenedor.innerHTML = `<p class="text-danger">${error.message}</p>`;
+  }
+}
+
+let temporizadorBitacora = null;
+
+async function cargarBitacoraAdmin(filtros = {}) {
+  const contenedor = document.getElementById('vista-bitacora');
+  try {
+    const params = new URLSearchParams();
+    if (filtros.correo) params.set('correo', filtros.correo);
+    if (filtros.accion) params.set('accion', filtros.accion);
+    const qs = params.toString();
+    const registros = await peticion('/bitacora' + (qs ? `?${qs}` : ''));
+    const acciones = [...new Set(registros.map((r) => r.accion))].sort();
+
+    contenedor.innerHTML = `
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 mb-0">Bitácora de actividad</h2>
+      </div>
+      <div class="d-flex gap-2 mb-3">
+        <input type="text" class="form-control form-control-sm" id="filtro-bitacora-correo"
+               placeholder="Filtrar por correo..." style="max-width:260px;" value="${filtros.correo || ''}">
+        <select class="form-select form-select-sm" id="filtro-bitacora-accion" style="max-width:240px;">
+          <option value="">Todas las acciones</option>
+          ${acciones.map((a) => `<option value="${a}" ${filtros.accion === a ? 'selected' : ''}>${a}</option>`).join('')}
+        </select>
+      </div>
+      <div class="tarjeta p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="small text-muted">
+              <tr><th>Fecha</th><th>Correo</th><th>Acción</th><th>Entidad</th><th>ID</th><th>IP</th></tr>
+            </thead>
+            <tbody>
+              ${registros.map((r) => `
+                <tr>
+                  <td>${new Date(r.fecha).toLocaleString('es-MX')}</td>
+                  <td>${r.correo || '—'}</td>
+                  <td>${r.accion}</td>
+                  <td>${r.entidad || '—'}</td>
+                  <td>${r.id_entidad ?? '—'}</td>
+                  <td>${r.ip || '—'}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+
+    const inputCorreo = document.getElementById('filtro-bitacora-correo');
+    inputCorreo.addEventListener('input', () => {
+      clearTimeout(temporizadorBitacora);
+      temporizadorBitacora = setTimeout(() => {
+        cargarBitacoraAdmin({ ...filtros, correo: inputCorreo.value.trim() });
+      }, 300);
+    });
+    document.getElementById('filtro-bitacora-accion').addEventListener('change', (e) => {
+      cargarBitacoraAdmin({ ...filtros, accion: e.target.value });
     });
   } catch (error) {
     contenedor.innerHTML = `<p class="text-danger">${error.message}</p>`;

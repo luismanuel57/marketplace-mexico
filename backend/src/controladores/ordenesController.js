@@ -1,4 +1,5 @@
 import pool from '../db.js';
+import { registrarBitacora } from '../servicios/bitacoraService.js';
 
 const ESTADOS_VALIDOS = ['pendiente', 'confirmado', 'preparando', 'enviado', 'entregado', 'cancelado'];
 
@@ -65,6 +66,16 @@ export async function crear(req, res) {
     }
 
     await pool.query("UPDATE bolsa SET estatus = 'convertida' WHERE id_bolsa = $1", [idBolsa]);
+
+    await registrarBitacora({
+      id_cliente: idCliente,
+      correo: req.cliente.correo,
+      accion: 'generar_orden',
+      entidad: 'orden',
+      id_entidad: orden.rows[0].id_orden,
+      detalle: { folio: orden.rows[0].folio_orden, total: Number(orden.rows[0].total) },
+      ip: req.ip,
+    });
 
     res.status(201).json({ mensaje: 'Pedido generado', orden: orden.rows[0] });
   } catch (error) {
@@ -149,6 +160,15 @@ export async function cambiarEstado(req, res) {
     if (resultado.rows.length === 0) {
       return res.status(404).json({ error: 'Pedido no encontrado' });
     }
+    await registrarBitacora({
+      id_cliente: req.cliente.id,
+      correo: req.cliente.correo,
+      accion: 'cambiar_estado_orden',
+      entidad: 'orden',
+      id_entidad: id,
+      detalle: { estado },
+      ip: req.ip,
+    });
     res.json({ mensaje: 'Estado actualizado', orden: resultado.rows[0] });
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import pool from '../db.js';
+import { registrarBitacora } from '../servicios/bitacoraService.js';
 
 export async function registrar(req, res) {
   const cliente = await pool.connect();
@@ -111,10 +112,20 @@ export async function iniciarSesion(req, res) {
     }
 
     const token = jwt.sign(
-      { id: usuario.id_cliente, rol: usuario.rol },
+      { id: usuario.id_cliente, rol: usuario.rol, correo: usuario.correo },
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
+
+    await registrarBitacora({
+      id_cliente: usuario.id_cliente,
+      correo: usuario.correo,
+      accion: 'login',
+      entidad: 'cliente',
+      id_entidad: usuario.id_cliente,
+      detalle: { rol: usuario.rol },
+      ip: req.ip,
+    });
 
     res.json({
       token,

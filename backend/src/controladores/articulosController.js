@@ -1,4 +1,5 @@
 import pool from '../db.js';
+import { registrarBitacora } from '../servicios/bitacoraService.js';
 
 const SELECT_BASE = `
   SELECT a.id_articulo, a.nombre, a.descripcion, a.precio_mxn, a.existencias,
@@ -101,6 +102,16 @@ export async function crear(req, res) {
       [id_categoria, idVendedor, nombre, descripcion || null, Number(precio_mxn), existencias || 0, imagen_url || null, marca || null]
     );
 
+    await registrarBitacora({
+      id_cliente: req.cliente.id,
+      correo: req.cliente.correo,
+      accion: 'crear_articulo',
+      entidad: 'articulo',
+      id_entidad: resultado.rows[0].id_articulo,
+      detalle: { nombre: resultado.rows[0].nombre },
+      ip: req.ip,
+    });
+
     res.status(201).json({ mensaje: 'Producto creado', articulo: resultado.rows[0] });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -138,6 +149,16 @@ export async function modificar(req, res) {
       [id, id_categoria, nombre, descripcion, precio_mxn, existencias, imagen_url, marca]
     );
 
+    await registrarBitacora({
+      id_cliente: req.cliente.id,
+      correo: req.cliente.correo,
+      accion: 'modificar_articulo',
+      entidad: 'articulo',
+      id_entidad: id,
+      detalle: { nombre: resultado.rows[0].nombre },
+      ip: req.ip,
+    });
+
     res.json({ mensaje: 'Producto actualizado', articulo: resultado.rows[0] });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -154,6 +175,15 @@ export async function desactivar(req, res) {
     if (resultado.rows.length === 0) {
       return res.status(404).json({ error: 'Producto no encontrado' });
     }
+    await registrarBitacora({
+      id_cliente: req.cliente.id,
+      correo: req.cliente.correo,
+      accion: 'desactivar_articulo',
+      entidad: 'articulo',
+      id_entidad: id,
+      detalle: { nombre: resultado.rows[0].nombre },
+      ip: req.ip,
+    });
     res.json({ mensaje: 'Producto desactivado', articulo: resultado.rows[0] });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -176,6 +206,15 @@ export async function marcarDestacado(req, res) {
     if (resultado.rows.length === 0) {
       return res.status(404).json({ error: 'Producto no encontrado' });
     }
+    await registrarBitacora({
+      id_cliente: req.cliente.id,
+      correo: req.cliente.correo,
+      accion: 'cambiar_destacado',
+      entidad: 'articulo',
+      id_entidad: id,
+      detalle: { nombre: resultado.rows[0].nombre, destacado },
+      ip: req.ip,
+    });
     res.json({
       mensaje: destacado ? 'Producto marcado como destacado' : 'Producto quitado de destacados',
       articulo: resultado.rows[0],

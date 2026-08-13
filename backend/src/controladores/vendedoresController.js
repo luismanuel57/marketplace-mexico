@@ -1,4 +1,5 @@
 import pool from '../db.js';
+import { registrarBitacora } from '../servicios/bitacoraService.js';
 
 export async function listar(req, res) {
   try {
@@ -12,6 +13,14 @@ export async function listar(req, res) {
        GROUP BY cl.id_cliente, cl.nombre, cl.apellido_paterno, cl.correo, cl.telefono, cl.estatus
        ORDER BY cl.id_cliente`
     );
+    await registrarBitacora({
+      id_cliente: req.cliente.id,
+      correo: req.cliente.correo,
+      accion: 'ver_vendedores',
+      entidad: 'vendedor',
+      detalle: { total: resultado.rows.length },
+      ip: req.ip,
+    });
     res.json(resultado.rows);
   } catch (error) {
     res.status(500).json({ error: error.message });

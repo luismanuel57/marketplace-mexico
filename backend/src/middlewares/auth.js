@@ -9,7 +9,7 @@ export function autenticar(req, res, next) {
   try {
     const token = cabecera.split(' ')[1];
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.cliente = { id: payload.id, rol: payload.rol };
+    req.cliente = { id: payload.id, rol: payload.rol, correo: payload.correo };
     next();
   } catch {
     return res.status(401).json({ error: 'Token inválido o expirado' });

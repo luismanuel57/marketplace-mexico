@@ -8,6 +8,7 @@
 --   psql -U tianguis -h localhost -d tianguis_digital -f create_database.sql
 -- ============================================================
 
+DROP TABLE IF EXISTS bitacora CASCADE;
 DROP TABLE IF EXISTS orden_detalle CASCADE;
 DROP TABLE IF EXISTS ordenes CASCADE;
 DROP TABLE IF EXISTS domicilios CASCADE;
@@ -153,3 +154,21 @@ CREATE TABLE orden_detalle (
   precio_unitario NUMERIC(10,2) NOT NULL,
   subtotal        NUMERIC(12,2) NOT NULL
 );
+
+-- ------------------------------------------------------------
+-- bitacora (auditoría de accesos y acciones del sistema)
+-- ------------------------------------------------------------
+CREATE TABLE bitacora (
+  id_bitacora SERIAL PRIMARY KEY,
+  id_cliente   INT          REFERENCES clientes(id_cliente) ON DELETE SET NULL,
+  correo       VARCHAR(120),
+  accion       VARCHAR(60)  NOT NULL,
+  entidad      VARCHAR(60),
+  id_entidad   INT,
+  detalle      JSONB,
+  ip           VARCHAR(45),
+  fecha        TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_bitacora_cliente ON bitacora(id_cliente);
+CREATE INDEX idx_bitacora_fecha   ON bitacora(fecha);
