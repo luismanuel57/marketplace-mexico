@@ -54,14 +54,14 @@ async function mostrarAlerta(titulo, mensaje, tipo = 'info', esHtml = false) {
   abrirModal();
 }
 
-function mostrarConfirmacion(titulo, mensaje) {
+function mostrarConfirmacion(titulo, mensaje, textoConfirmar = 'Confirmar') {
   return new Promise((resolver) => {
     modalResolucion = resolver;
     const overlay = configurarModal('info', titulo, mensaje);
     const acciones = overlay.querySelector('.modal-sistema-acciones');
     acciones.innerHTML = `
       <button type="button" class="btn-ghost btn-sm px-4 modal-cancelar">Cancelar</button>
-      <button type="button" class="btn-negro btn-sm px-4 modal-confirmar">Confirmar</button>`;
+      <button type="button" class="btn-negro btn-sm px-4 modal-confirmar">${textoConfirmar}</button>`;
     overlay.querySelector('.modal-cancelar').addEventListener('click', cerrarModal);
     overlay.querySelector('.modal-confirmar').addEventListener('click', () => {
       overlay.classList.remove('visible');

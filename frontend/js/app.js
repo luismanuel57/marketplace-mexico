@@ -13,8 +13,10 @@ function actualizarNavbar() {
       ${enlacePedidos}
       ${enlaceAdmin}
       <li class="nav-item"><a class="nav-link" href="#" id="enlace-salir">Cerrar sesión</a></li>`;
-    document.getElementById('enlace-salir').addEventListener('click', (e) => {
+    document.getElementById('enlace-salir').addEventListener('click', async (e) => {
       e.preventDefault();
+      const confirmar = await mostrarConfirmacion('Cerrar sesión', '¿Seguro que quieres cerrar tu sesión?', 'Aceptar');
+      if (!confirmar) return;
       cerrarSesion();
       actualizarNavbar();
       mostrarAlerta('Sesión cerrada', 'Has cerrado tu sesión correctamente.', 'info');
