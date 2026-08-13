@@ -137,6 +137,6 @@ export async function subirImagenDrive(archivo, categoria) {
   return {
     fileId,
     nombre,
-    url: `https://drive.google.com/uc?export=view&id=${fileId}`,
+    url: `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`,
   };
 }
