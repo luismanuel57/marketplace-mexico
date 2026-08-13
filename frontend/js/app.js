@@ -7,10 +7,14 @@ function actualizarNavbar() {
     const enlaceAdmin = usuario.rol === 'administrador'
       ? '<li class="nav-item"><a class="nav-link" href="admin.html">Panel</a></li>'
       : '';
+    const enlaceVendedor = usuario.rol === 'vendedor'
+      ? '<li class="nav-item"><a class="nav-link" href="vendedor.html">Mi panel</a></li>'
+      : '';
     const enlacePedidos = '<li class="nav-item"><a class="nav-link" href="pedidos.html">Mis pedidos</a></li>';
     contenedor.innerHTML = `
       <li class="nav-item"><span class="nav-link text-muted">Hola, ${usuario.nombre}</span></li>
       ${enlacePedidos}
+      ${enlaceVendedor}
       ${enlaceAdmin}
       <li class="nav-item"><a class="nav-link" href="#" id="enlace-salir">Cerrar sesión</a></li>`;
     document.getElementById('enlace-salir').addEventListener('click', async (e) => {

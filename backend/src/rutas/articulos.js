@@ -13,7 +13,12 @@ function esVendedorOAdmin(req, res, next) {
   return res.status(403).json({ error: 'Acceso denegado: se requiere rol de vendedor o administrador' });
 }
 
-router.get('/', listar);
+// El catálogo público no exige token; la consulta de un vendedor (?vendedor=)
+// sí, para verificar que solo consulte sus propios artículos.
+router.get('/', (req, res, next) => {
+  if (req.query.vendedor !== undefined) return autenticar(req, res, next);
+  next();
+}, listar);
 router.get('/:id', detalle);
 router.post('/', autenticar, esVendedorOAdmin, crear);
 router.put('/:id/destacado', autenticar, esAdmin, marcarDestacado);

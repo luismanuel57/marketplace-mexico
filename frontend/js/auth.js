@@ -102,7 +102,10 @@ async function iniciarSesion(e) {
     guardarSesion(datos.token, datos.usuario);
     mostrarAlerta('Bienvenido', `Hola, ${datos.usuario.nombre}. Sesión iniciada.`, 'exito');
     setTimeout(() => {
-      window.location.href = datos.usuario.rol === 'administrador' ? 'admin.html' : 'index.html';
+      const destino = datos.usuario.rol === 'administrador' ? 'admin.html'
+        : datos.usuario.rol === 'vendedor' ? 'vendedor.html'
+        : 'index.html';
+      window.location.href = destino;
     }, 900);
   } catch (error) {
     mostrarAlerta('No se pudo iniciar sesión', error.message, 'error');

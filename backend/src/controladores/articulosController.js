@@ -24,10 +24,26 @@ function imagenParaRespuesta(imagenUrl, req) {
 
 export async function listar(req, res) {
   try {
-    const { q, categoria, precio_min, precio_max, disponible, destacado } = req.query;
-    const condiciones = ['a.estatus = $1'];
-    const valores = ['activo'];
-    let siguiente = 2;
+    const { q, categoria, precio_min, precio_max, disponible, destacado, vendedor } = req.query;
+    const condiciones = [];
+    const valores = [];
+    let siguiente = 1;
+
+    // El catálogo público solo muestra artículos activos. El panel del vendedor
+    // consulta ?vendedor=<id> y ve también sus desactivados para poder reactivarlos.
+    if (vendedor === undefined) {
+      condiciones.push(`a.estatus = $${siguiente++}`);
+      valores.push('activo');
+    } else {
+      if (!req.cliente) {
+        return res.status(401).json({ error: 'No autorizado: falta el token' });
+      }
+      if (req.cliente.rol !== 'administrador' && Number(vendedor) !== req.cliente.id) {
+        return res.status(403).json({ error: 'Acceso denegado: solo puedes consultar tus propios artículos' });
+      }
+      condiciones.push(`a.id_vendedor = $${siguiente++}`);
+      valores.push(Number(vendedor));
+    }
 
     if (q) {
       condiciones.push(`a.nombre ILIKE $${siguiente++}`);
@@ -138,7 +154,7 @@ export async function crear(req, res) {
 export async function modificar(req, res) {
   try {
     const { id } = req.params;
-    const { id_categoria, nombre, descripcion, precio_mxn, existencias, imagen_url, marca } = req.body;
+    const { id_categoria, nombre, descripcion, precio_mxn, existencias, imagen_url, marca, estatus } = req.body;
 
     const existe = await pool.query('SELECT id_articulo FROM articulos WHERE id_articulo = $1', [id]);
     if (existe.rows.length === 0) {
@@ -151,6 +167,9 @@ export async function modificar(req, res) {
     if (existencias !== undefined && (!Number.isFinite(Number(existencias)) || Number(existencias) < 0)) {
       return res.status(400).json({ error: 'Las existencias no pueden ser negativas' });
     }
+    if (estatus !== undefined && !['activo', 'inactivo'].includes(estatus)) {
+      return res.status(400).json({ error: 'El estatus debe ser activo o inactivo' });
+    }
 
     const resultado = await pool.query(
       `UPDATE articulos SET
@@ -160,10 +179,11 @@ export async function modificar(req, res) {
          precio_mxn   = COALESCE($5, precio_mxn),
          existencias  = COALESCE($6, existencias),
          imagen_url   = COALESCE($7, imagen_url),
-         marca        = COALESCE($8, marca)
+         marca        = COALESCE($8, marca),
+         estatus      = COALESCE($9, estatus)
        WHERE id_articulo = $1
        RETURNING *`,
-      [id, id_categoria, nombre, descripcion, precio_mxn, existencias, imagen_url, marca]
+      [id, id_categoria, nombre, descripcion, precio_mxn, existencias, imagen_url, marca, estatus]
     );
 
     await registrarBitacora({
