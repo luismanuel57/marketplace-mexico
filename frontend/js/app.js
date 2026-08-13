@@ -93,7 +93,7 @@ async function cargarDestacados() {
   const contenedor = document.getElementById('lista-destacados');
   if (!contenedor) return;
   try {
-    const articulos = await peticion('/articulos?disponible=true&destacados=true');
+    const articulos = await peticion('/articulos?disponible=true&destacado=true');
     contenedor.innerHTML = articulos.map(tarjetaArticulo).join('');
     vincularBotonesAgregar();
   } catch (error) {

@@ -62,7 +62,7 @@ async function cargarArticulosAdmin() {
         <div class="table-responsive">
           <table class="table table-hover mb-0">
             <thead class="small text-muted">
-              <tr><th>ID</th><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Existencias</th><th>Estatus</th><th></th></tr>
+              <tr><th>ID</th><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Existencias</th><th>Estatus</th><th>Destacado</th><th></th></tr>
             </thead>
             <tbody>
               ${articulos.map((a) => `
@@ -79,6 +79,12 @@ async function cargarArticulosAdmin() {
                   <td>${formatearPrecio(a.precio_mxn)}</td>
                   <td>${a.existencias}</td>
                   <td><span class="estado-pastilla">${a.estatus}</span></td>
+                  <td>
+                    <span class="estado-pastilla ${a.destacado ? 'destacado-si' : ''}">${a.destacado ? 'Sí' : 'No'}</span>
+                    <button type="button" class="btn-ghost btn-sm ms-1 destacar-articulo" data-id="${a.id_articulo}" data-destacado="${a.destacado}">
+                      ${a.destacado ? 'Quitar' : 'Destacar'}
+                    </button>
+                  </td>
                   <td>
                     <button type="button" class="btn-ghost btn-sm editar-articulo" data-id="${a.id_articulo}">Editar</button>
                     ${a.estatus === 'activo'
@@ -109,6 +115,23 @@ async function cargarArticulosAdmin() {
           cargarArticulosAdmin();
         } catch (error) {
           mostrarAlerta('No se pudo desactivar', error.message, 'error');
+        }
+      });
+    });
+    document.querySelectorAll('.destacar-articulo').forEach((boton) => {
+      boton.addEventListener('click', async () => {
+        const destacar = boton.dataset.destacado !== 'true';
+        try {
+          await peticion(`/articulos/${boton.dataset.id}/destacado`, {
+            method: 'PUT',
+            body: JSON.stringify({ destacado: destacar }),
+          });
+          mostrarAlerta('Destacado actualizado', destacar
+            ? 'El artículo se mostrará en la portada.'
+            : 'El artículo ya no se muestra en la portada.', 'exito');
+          cargarArticulosAdmin();
+        } catch (error) {
+          mostrarAlerta('No se pudo actualizar', error.message, 'error');
         }
       });
     });

@@ -70,15 +70,17 @@ CREATE TABLE articulos (
   existencias    INT           NOT NULL DEFAULT 0 CHECK (existencias >= 0),
   imagen_url     VARCHAR(300),
   marca          VARCHAR(60),
+  destacado      BOOLEAN       NOT NULL DEFAULT FALSE,
   estatus        VARCHAR(15)   NOT NULL DEFAULT 'activo'
                  CHECK (estatus IN ('activo', 'inactivo')),
   fecha_registro TIMESTAMP     NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_articulos_categoria ON articulos(id_categoria);
-CREATE INDEX idx_articulos_nombre    ON articulos(nombre);
-CREATE INDEX idx_articulos_estatus   ON articulos(estatus);
-CREATE INDEX idx_articulos_vendedor  ON articulos(id_vendedor);
+CREATE INDEX idx_articulos_categoria  ON articulos(id_categoria);
+CREATE INDEX idx_articulos_nombre     ON articulos(nombre);
+CREATE INDEX idx_articulos_estatus    ON articulos(estatus);
+CREATE INDEX idx_articulos_vendedor   ON articulos(id_vendedor);
+CREATE INDEX idx_articulos_destacado  ON articulos(id_articulo) WHERE destacado;
 
 -- ------------------------------------------------------------
 -- bolsa (carrito de compras)

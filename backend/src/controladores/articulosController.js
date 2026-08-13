@@ -2,7 +2,7 @@ import pool from '../db.js';
 
 const SELECT_BASE = `
   SELECT a.id_articulo, a.nombre, a.descripcion, a.precio_mxn, a.existencias,
-         a.imagen_url, a.marca, a.estatus, a.fecha_registro, a.id_vendedor,
+         a.imagen_url, a.marca, a.estatus, a.fecha_registro, a.id_vendedor, a.destacado,
          c.id_categoria, c.nombre AS categoria
   FROM articulos a
   JOIN categorias c ON c.id_categoria = a.id_categoria
@@ -10,7 +10,7 @@ const SELECT_BASE = `
 
 export async function listar(req, res) {
   try {
-    const { q, categoria, precio_min, precio_max, disponible, destacados } = req.query;
+    const { q, categoria, precio_min, precio_max, disponible, destacado } = req.query;
     const condiciones = ['a.estatus = $1'];
     const valores = ['activo'];
     let siguiente = 2;
@@ -34,9 +34,12 @@ export async function listar(req, res) {
     if (disponible === 'true') {
       condiciones.push('a.existencias > 0');
     }
+    if (destacado === 'true') {
+      condiciones.push('a.destacado = TRUE');
+    }
 
     let sql = `${SELECT_BASE} WHERE ${condiciones.join(' AND ')}`;
-    sql += destacados === 'true' ? ' ORDER BY a.precio_mxn DESC LIMIT 8' : ' ORDER BY a.nombre';
+    sql += destacado === 'true' ? ' ORDER BY a.precio_mxn DESC LIMIT 8' : ' ORDER BY a.nombre';
 
     const resultado = await pool.query(sql, valores);
     res.json(resultado.rows);
@@ -152,6 +155,31 @@ export async function desactivar(req, res) {
       return res.status(404).json({ error: 'Producto no encontrado' });
     }
     res.json({ mensaje: 'Producto desactivado', articulo: resultado.rows[0] });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+export async function marcarDestacado(req, res) {
+  try {
+    const { id } = req.params;
+    const { destacado } = req.body;
+
+    if (typeof destacado !== 'boolean') {
+      return res.status(400).json({ error: 'El campo destacado es obligatorio y debe ser true o false' });
+    }
+
+    const resultado = await pool.query(
+      'UPDATE articulos SET destacado = $2 WHERE id_articulo = $1 RETURNING id_articulo, nombre, destacado',
+      [id, destacado]
+    );
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+    res.json({
+      mensaje: destacado ? 'Producto marcado como destacado' : 'Producto quitado de destacados',
+      articulo: resultado.rows[0],
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -378,3 +378,9 @@ a { color: inherit; text-decoration: none; }
   font-size: 0.75rem;
   color: var(--gris-600);
 }
+
+.estado-pastilla.destacado-si {
+  background-color: var(--negro);
+  border-color: var(--negro);
+  color: var(--blanco);
+}

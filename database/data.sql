@@ -46,42 +46,43 @@ INSERT INTO categorias (nombre, descripcion) VALUES
   ('Otros',         'Productos varios');
 
 -- Artículos (imagen_url apunta a Google Drive; se completa en el Video 6) --
--- Cada artículo pertenece a un vendedor (admin o vendedor de prueba).
+-- Cada artículo pertenece a un vendedor (admin o vendedor de prueba);
+-- destacado marca los productos que se muestran en la sección de la portada.
 INSERT INTO articulos
-  (id_categoria, id_vendedor, nombre, descripcion, precio_mxn, existencias, imagen_url, marca, estatus)
+  (id_categoria, id_vendedor, nombre, descripcion, precio_mxn, existencias, imagen_url, marca, destacado, estatus)
 VALUES
   ((SELECT id_categoria FROM categorias WHERE nombre = 'Computación'),
    (SELECT id_cliente FROM clientes WHERE correo = 'admin@tianguisdigital.mx'),
    'Laptop Lenovo IdeaPad', 'Laptop de 15.6 pulgadas, 16 GB RAM, 512 GB SSD.',
-   14999.00, 8, 'https://drive.google.com/uc?export=view&id=REEMPLAZAR_ID_1', 'Lenovo', 'activo'),
+   14999.00, 8, 'https://drive.google.com/uc?export=view&id=REEMPLAZAR_ID_1', 'Lenovo', TRUE, 'activo'),
   ((SELECT id_categoria FROM categorias WHERE nombre = 'Computación'),
    (SELECT id_cliente FROM clientes WHERE correo = 'vendedor@tianguisdigital.mx'),
    'Mouse Logitech M185',   'Mouse inalámbrico compacto para portátil.',
-   349.00, 30, 'https://drive.google.com/uc?export=view&id=REEMPLAZAR_ID_2', 'Logitech', 'activo'),
+   349.00, 30, 'https://drive.google.com/uc?export=view&id=REEMPLAZAR_ID_2', 'Logitech', FALSE, 'activo'),
   ((SELECT id_categoria FROM categorias WHERE nombre = 'Telefonía'),
    (SELECT id_cliente FROM clientes WHERE correo = 'admin@tianguisdigital.mx'),
    'Celular Xiaomi Redmi Note 13', 'Pantalla AMOLED 6.67", 128 GB, 8 GB RAM.',
-   4299.00, 12, 'https://drive.google.com/uc?export=view&id=REEMPLAZAR_ID_3', 'Xiaomi', 'activo'),
+   4299.00, 12, 'https://drive.google.com/uc?export=view&id=REEMPLAZAR_ID_3', 'Xiaomi', TRUE, 'activo'),
   ((SELECT id_categoria FROM categorias WHERE nombre = 'Electrónica'),
    (SELECT id_cliente FROM clientes WHERE correo = 'admin@tianguisdigital.mx'),
    'Televisor Samsung 50" 4K', 'Smart TV 4K UHD con HDR.',
-   8499.00, 5, 'https://drive.google.com/uc?export=view&id=REEMPLAZAR_ID_4', 'Samsung', 'activo'),
+   8499.00, 5, 'https://drive.google.com/uc?export=view&id=REEMPLAZAR_ID_4', 'Samsung', FALSE, 'activo'),
   ((SELECT id_categoria FROM categorias WHERE nombre = 'Hogar'),
    (SELECT id_cliente FROM clientes WHERE correo = 'vendedor@tianguisdigital.mx'),
    'Licuadora Oster', 'Licuadora de vaso de vidrio con 7 velocidades.',
-   1299.00, 15, 'https://drive.google.com/uc?export=view&id=REEMPLAZAR_ID_5', 'Oster', 'activo'),
+   1299.00, 15, 'https://drive.google.com/uc?export=view&id=REEMPLAZAR_ID_5', 'Oster', FALSE, 'activo'),
   ((SELECT id_categoria FROM categorias WHERE nombre = 'Ropa'),
    (SELECT id_cliente FROM clientes WHERE correo = 'vendedor@tianguisdigital.mx'),
    'Camisa de algodón', 'Camisa manga corta 100% algodón, talla M.',
-   299.00, 40, 'https://drive.google.com/uc?export=view&id=REEMPLAZAR_ID_6', 'MarcaPropia', 'activo'),
+   299.00, 40, 'https://drive.google.com/uc?export=view&id=REEMPLAZAR_ID_6', 'MarcaPropia', FALSE, 'activo'),
   ((SELECT id_categoria FROM categorias WHERE nombre = 'Videojuegos'),
    (SELECT id_cliente FROM clientes WHERE correo = 'admin@tianguisdigital.mx'),
    'Consola Nintendo Switch', 'Consola híbrida con dos controles Joy-Con.',
-   6499.00, 6, 'https://drive.google.com/uc?export=view&id=REEMPLAZAR_ID_7', 'Nintendo', 'activo'),
+   6499.00, 6, 'https://drive.google.com/uc?export=view&id=REEMPLAZAR_ID_7', 'Nintendo', TRUE, 'activo'),
   ((SELECT id_categoria FROM categorias WHERE nombre = 'Deportes'),
    (SELECT id_cliente FROM clientes WHERE correo = 'admin@tianguisdigital.mx'),
    'Bicicleta de montaña', 'Bicicleta MTB 21 velocidades, rodada 27.5.',
-   5499.00, 4, 'https://drive.google.com/uc?export=view&id=REEMPLAZAR_ID_8', 'MarcaMTB', 'activo');
+   5499.00, 4, 'https://drive.google.com/uc?export=view&id=REEMPLAZAR_ID_8', 'MarcaMTB', FALSE, 'activo');
 
 -- Domicilio del comprador (México) ----------------------------
 INSERT INTO domicilios

@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { listar, detalle, crear, modificar, desactivar } from '../controladores/articulosController.js';
-import { autenticar, esDuenoArticulo } from '../middlewares/auth.js';
+import { listar, detalle, crear, modificar, desactivar, marcarDestacado } from '../controladores/articulosController.js';
+import { autenticar, esAdmin, esDuenoArticulo } from '../middlewares/auth.js';
 
 const router = Router();
 
@@ -16,6 +16,7 @@ function esVendedorOAdmin(req, res, next) {
 router.get('/', listar);
 router.get('/:id', detalle);
 router.post('/', autenticar, esVendedorOAdmin, crear);
+router.put('/:id/destacado', autenticar, esAdmin, marcarDestacado);
 router.put('/:id', autenticar, esDuenoArticulo, modificar);
 router.delete('/:id', autenticar, esDuenoArticulo, desactivar);
 
