@@ -137,7 +137,9 @@ CREATE TABLE ordenes (
   total         NUMERIC(12,2)  NOT NULL DEFAULT 0,
   estado        VARCHAR(20)    NOT NULL DEFAULT 'pendiente'
                 CHECK (estado IN ('pendiente', 'confirmado', 'preparando',
-                                  'enviado', 'entregado', 'cancelado'))
+                                  'enviado', 'entregado', 'cancelado')),
+  metodo_pago   VARCHAR(20)    NOT NULL DEFAULT 'no_especificado'
+                CHECK (metodo_pago IN ('no_especificado', 'tarjeta_prueba', 'efectivo'))
 );
 
 CREATE INDEX idx_ordenes_cliente ON ordenes(id_cliente);

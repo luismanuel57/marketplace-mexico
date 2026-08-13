@@ -256,22 +256,142 @@ async function generarPedido() {
         }
       }
 
-        overlay.classList.remove('visible');
-        try {
-          const resultado = await peticion('/ordenes', {
-            method: 'POST',
-            body: JSON.stringify({ id_domicilio: idDomicilio }),
-          });
-          actualizarContadorBolsa();
-          mostrarAlerta('Pedido generado', `Tu pedido ${resultado.orden.folio_orden} fue creado con éxito.`, 'exito');
-          setTimeout(() => { window.location.href = 'pedidos.html'; }, 1200);
-        } catch (error) {
-          mostrarAlerta('No se pudo generar', error.message, 'error');
-        }
+      // Paso 1 resuelto: pasar al paso 2 (datos de tarjeta de prueba).
+      mostrarPasoPago(overlay, idDomicilio);
     });
   } catch (error) {
     mostrarAlerta('No se pudo generar', error.message, 'error');
   }
+}
+
+// Algoritmo de Luhn para validar el número de tarjeta en el cliente.
+function luhnValido(numero) {
+  let suma = 0;
+  let doble = false;
+  for (let i = numero.length - 1; i >= 0; i--) {
+    let digito = Number(numero[i]);
+    if (doble) {
+      digito *= 2;
+      if (digito > 9) digito -= 9;
+    }
+    suma += digito;
+    doble = !doble;
+  }
+  return suma % 10 === 0;
+}
+
+// Valida formato MM/AA y que la tarjeta no esté vencida.
+function expiracionValida(texto) {
+  const coincidencia = /^(0[1-9]|1[0-2])\/(\d{2})$/.exec(texto);
+  if (!coincidencia) return false;
+  const mes = Number(coincidencia[1]);
+  const anio = 2000 + Number(coincidencia[2]);
+  const ahora = new Date();
+  const anioActual = ahora.getFullYear();
+  const mesActual = ahora.getMonth() + 1;
+  return anio > anioActual || (anio === anioActual && mes >= mesActual);
+}
+
+// Paso 2 del flujo: formulario de tarjeta de PRUEBA (simulación, sin pasarela).
+// El número de tarjeta se valida solo en el cliente y NUNCA viaja al backend:
+// al backend solo llega metodo_pago: 'tarjeta_prueba'.
+function mostrarPasoPago(overlay, idDomicilio) {
+  overlay.querySelector('.modal-sistema-titulo').textContent = 'Pago';
+  overlay.querySelector('.modal-sistema-mensaje').innerHTML = `
+    <p class="small text-muted mb-3"><i class="bi bi-shield-check me-1"></i>Pago de prueba &mdash; los datos no se envían ni se almacenan.</p>
+    <div class="campo-form mb-2">
+      <label>Número de tarjeta *</label>
+      <input type="text" class="form-control" id="pago-numero" inputmode="numeric" maxlength="19"
+             placeholder="0000 0000 0000 0000" autocomplete="off">
+      <small class="text-muted" id="aviso-pago-numero"></small>
+    </div>
+    <div class="campo-form mb-2">
+      <label>Titular *</label>
+      <input type="text" class="form-control" id="pago-titular" placeholder="Nombre como aparece en la tarjeta" autocomplete="off">
+      <small class="text-muted" id="aviso-pago-titular"></small>
+    </div>
+    <div class="row g-2 mb-2">
+      <div class="col-6 campo-form">
+        <label>Expiración *</label>
+        <input type="text" class="form-control" id="pago-expiracion" inputmode="numeric" maxlength="5"
+               placeholder="MM/AA" autocomplete="off">
+        <small class="text-muted" id="aviso-pago-expiracion"></small>
+      </div>
+      <div class="col-6 campo-form">
+        <label>CVV *</label>
+        <input type="text" class="form-control" id="pago-cvv" inputmode="numeric" maxlength="4"
+               placeholder="123" autocomplete="off">
+        <small class="text-muted" id="aviso-pago-cvv"></small>
+      </div>
+    </div>`;
+
+  const acciones = overlay.querySelector('.modal-sistema-acciones');
+  acciones.innerHTML = `
+    <button type="button" class="btn-ghost btn-sm px-4 modal-cancelar">Cancelar</button>
+    <button type="button" class="btn-negro btn-sm px-4 modal-pagar">Pagar</button>`;
+  overlay.classList.add('visible');
+
+  const numero = document.getElementById('pago-numero');
+  const expiracion = document.getElementById('pago-expiracion');
+  const cvv = document.getElementById('pago-cvv');
+
+  // Formato en vivo: solo dígitos, agrupados de 4 en 4.
+  numero.addEventListener('input', () => {
+    numero.value = numero.value.replace(/\D/g, '').slice(0, 16).replace(/(\d{4})(?=\d)/g, '$1 ');
+  });
+  expiracion.addEventListener('input', () => {
+    let valor = expiracion.value.replace(/\D/g, '').slice(0, 4);
+    if (valor.length > 2) valor = valor.slice(0, 2) + '/' + valor.slice(2);
+    expiracion.value = valor;
+  });
+  cvv.addEventListener('input', () => {
+    cvv.value = cvv.value.replace(/\D/g, '').slice(0, 4);
+  });
+
+  overlay.querySelector('.modal-cancelar').addEventListener('click', () => overlay.classList.remove('visible'));
+
+  function marcarCampo(input, idAviso, valido, mensaje) {
+    input.classList.toggle('invalido', !valido);
+    document.getElementById(idAviso).textContent = valido ? '' : mensaje;
+    return valido;
+  }
+
+  overlay.querySelector('.modal-pagar').addEventListener('click', async () => {
+    const numeroLimpio = numero.value.replace(/[\s-]/g, '');
+    const titular = document.getElementById('pago-titular').value.trim();
+    const expiracionValor = expiracion.value.trim();
+    const cvvValor = cvv.value.trim();
+
+    const validaciones = [
+      marcarCampo(numero, 'aviso-pago-numero',
+        /^\d{13,19}$/.test(numeroLimpio) && luhnValido(numeroLimpio),
+        'Número de tarjeta inválido (13 a 19 dígitos).'),
+      marcarCampo(document.getElementById('pago-titular'), 'aviso-pago-titular',
+        titular.length >= 3,
+        'Escribe el nombre del titular (mínimo 3 letras).'),
+      marcarCampo(expiracion, 'aviso-pago-expiracion',
+        expiracionValida(expiracionValor),
+        'Fecha inválida o vencida (formato MM/AA).'),
+      marcarCampo(cvv, 'aviso-pago-cvv',
+        /^\d{3,4}$/.test(cvvValor),
+        'CVV inválido (3 o 4 dígitos).'),
+    ];
+
+    if (validaciones.includes(false)) return;
+
+    try {
+      const resultado = await peticion('/ordenes', {
+        method: 'POST',
+        body: JSON.stringify({ id_domicilio: idDomicilio, metodo_pago: 'tarjeta_prueba' }),
+      });
+      overlay.classList.remove('visible');
+      actualizarContadorBolsa();
+      mostrarAlerta('Pedido generado', `Tu pedido ${resultado.orden.folio_orden} fue creado con éxito.`, 'exito');
+      setTimeout(() => { window.location.href = 'pedidos.html'; }, 1200);
+    } catch (error) {
+      mostrarAlerta('No se pudo generar', error.message, 'error');
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', cargarBolsa);

@@ -117,6 +117,7 @@ https://drive.google.com/uc?export=view&id=<ID_DEL_ARCHIVO>
 - Detalle del producto con información del vendedor.
 - Carrito: agregar, modificar cantidades, eliminar, subtotal y total.
 - Solicitud de pedido y consulta de pedidos.
+- Pago simulado con tarjeta de prueba (los datos no se envían ni se almacenan).
 - Panel de administración: productos, categorías, usuarios y estados de pedidos.
 - Formato mexicano: precios en MXN, estados de la República, códigos postales.
 

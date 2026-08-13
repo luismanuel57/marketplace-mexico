@@ -2,14 +2,20 @@ import pool from '../db.js';
 import { registrarBitacora } from '../servicios/bitacoraService.js';
 
 const ESTADOS_VALIDOS = ['pendiente', 'confirmado', 'preparando', 'enviado', 'entregado', 'cancelado'];
+const METODOS_PAGO_VALIDOS = ['no_especificado', 'tarjeta_prueba', 'efectivo'];
 
 export async function crear(req, res) {
   try {
     const idCliente = req.cliente.id;
-    const { id_domicilio } = req.body;
+    const { id_domicilio, metodo_pago } = req.body;
+    const metodoPago = metodo_pago || 'no_especificado';
 
     if (!id_domicilio) {
       return res.status(400).json({ error: 'id_domicilio es obligatorio' });
+    }
+
+    if (!METODOS_PAGO_VALIDOS.includes(metodoPago)) {
+      return res.status(400).json({ error: `Método de pago inválido. Válidos: ${METODOS_PAGO_VALIDOS.join(', ')}` });
     }
 
     const domicilio = await pool.query(
@@ -50,9 +56,9 @@ export async function crear(req, res) {
     const folio = `ORD-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 90000) + 10000)}`;
 
     const orden = await pool.query(
-      `INSERT INTO ordenes (folio_orden, id_cliente, id_domicilio, subtotal, envio, total)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [folio, idCliente, id_domicilio, subtotal, envio, total]
+      `INSERT INTO ordenes (folio_orden, id_cliente, id_domicilio, subtotal, envio, total, metodo_pago)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [folio, idCliente, id_domicilio, subtotal, envio, total, metodoPago]
     );
 
     for (const linea of detalle.rows) {
@@ -73,7 +79,7 @@ export async function crear(req, res) {
       accion: 'generar_orden',
       entidad: 'orden',
       id_entidad: orden.rows[0].id_orden,
-      detalle: { folio: orden.rows[0].folio_orden, total: Number(orden.rows[0].total) },
+      detalle: { folio: orden.rows[0].folio_orden, total: Number(orden.rows[0].total), metodo_pago: metodoPago },
       ip: req.ip,
     });
 
