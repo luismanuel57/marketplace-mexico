@@ -20,6 +20,20 @@ html, body {
   font-family: var(--fuente);
   background-color: var(--blanco-humo);
   color: var(--negro);
+  min-height: 100vh;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+.pie-pagina {
+  flex-shrink: 0;
 }
 
 a { color: inherit; text-decoration: none; }
@@ -302,7 +316,10 @@ a { color: inherit; text-decoration: none; }
   border-radius: 16px;
   max-width: 440px;
   width: 100%;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
   padding: 1.8rem;
+  margin: auto;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
   animation: aparecer-modal 0.18s ease;
 }
