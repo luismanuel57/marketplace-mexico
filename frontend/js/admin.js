@@ -33,10 +33,8 @@ async function verificarAdmin() {
     pestana.addEventListener('click', () => {
       document.querySelectorAll('#verificacion-admin .pestana-auth').forEach((p) => p.classList.remove('activa'));
       pestana.classList.add('activa');
-      document.querySelectorAll('#verificacion-admin [data-vista]').forEach((v) => {
-        if (v.tagName === 'DIV') v.classList.add('d-none');
-      });
       const vistaId = pestana.dataset.vista;
+      Object.keys(cargarVista).forEach((id) => document.getElementById(id).classList.add('d-none'));
       document.getElementById(vistaId).classList.remove('d-none');
       if (!vistasCargadas[vistaId]) {
         vistasCargadas[vistaId] = true;
