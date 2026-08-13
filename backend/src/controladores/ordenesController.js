@@ -93,7 +93,7 @@ export async function detalle(req, res) {
 
     const orden = await pool.query(
       `SELECT o.id_orden, o.folio_orden, o.fecha_orden, o.subtotal, o.envio, o.total, o.estado,
-              cl.nombre, cl.apellido_paterno, d.calle, d.numero, d.colonia, d.municipio, d.estado, d.codigo_postal
+              cl.nombre, cl.apellido_paterno, d.calle, d.numero, d.colonia, d.municipio, d.estado AS estado_domicilio, d.codigo_postal, d.pais
        FROM ordenes o
        JOIN clientes cl ON cl.id_cliente = o.id_cliente
        JOIN domicilios d ON d.id_domicilio = o.id_domicilio

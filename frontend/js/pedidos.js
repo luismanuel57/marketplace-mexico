@@ -58,7 +58,11 @@ async function cargarPedidos() {
              <div class="d-flex justify-content-between"><span>Envío</span><span>${formatearPrecio(detalle.envio)}</span></div>
              <div class="d-flex justify-content-between fw-bold"><span>Total</span><span>${formatearPrecio(detalle.total)}</span></div>
              <hr>
-             <small class="text-muted">${detalle.calle} ${detalle.numero || ''}, ${detalle.colonia}, ${detalle.municipio}, ${detalle.estado}</small>`,
+             <small class="text-muted">
+               ${detalle.calle} ${detalle.numero || ''}, ${detalle.colonia},<br>
+               ${detalle.municipio}, ${detalle.estado_domicilio},<br>
+               C.P. ${detalle.codigo_postal}, ${detalle.pais}
+             </small>`,
             'info');
         } catch (error) {
           mostrarAlerta('Error', error.message, 'error');

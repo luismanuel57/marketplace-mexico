@@ -132,40 +132,131 @@ async function actualizarCantidad(idDetalle, delta) {
 async function generarPedido() {
   try {
     const domicilios = await peticion('/domicilios');
-    if (domicilios.length === 0) {
-      mostrarAlerta('Sin dirección', 'Agrega una dirección de envío antes de generar tu pedido.', 'info');
-      return;
-    }
-
-    const opciones = domicilios
-      .map((d) => `<button type="button" class="d-flex w-100 text-start btn-ghost mb-2 opcion-domicilio"
-          data-id="${d.id_domicilio}">
-        <span><strong>${d.nombre || 'Dirección'}</strong><br>
-        <small class="text-muted">${d.calle} ${d.numero || ''}, ${d.colonia}, ${d.municipio}, ${d.estado}</small></span>
-      </button>`)
-      .join('');
 
     const overlay = crearModalSistema();
     const acciones = overlay.querySelector('.modal-sistema-acciones');
-    overlay.querySelector('.modal-sistema-titulo').textContent = 'Elige la dirección de envío';
-    overlay.querySelector('.modal-sistema-mensaje').innerHTML = opciones;
-    acciones.innerHTML = '';
+    overlay.querySelector('.modal-sistema-titulo').textContent = 'Dirección de envío';
+
+    const guardadas = domicilios.length
+      ? `<p class="small text-muted mb-2">Dirección guardada:</p>
+         <div class="mb-3">${domicilios.map((d) => `
+           <label class="d-block tarjeta p-3 mb-2 opcion-domicilio" style="cursor:pointer">
+             <input type="radio" name="domicilio" value="${d.id_domicilio}" class="me-2" checked>
+             <span><strong>${d.nombre || 'Dirección'}</strong><br>
+             <small class="text-muted">${d.calle} ${d.numero || ''}, ${d.colonia}, ${d.codigo_postal} ${d.municipio}, ${d.estado}</small></span>
+           </label>`).join('')}
+           <button type="button" class="btn-ghost btn-sm btn-agregar-direccion">Usar otra dirección</button>
+         </div>`
+      : '';
+
+    const campos = `
+      <div class="form-nueva-direccion ${domicilios.length ? 'd-none' : ''}">
+        <div class="campo-form mb-2">
+          <label>Nombre</label>
+          <input type="text" class="form-control" id="ped-nombre" placeholder="Nombre de la persona que recibe">
+        </div>
+        <div class="campo-form mb-2">
+          <label>Calle *</label>
+          <input type="text" class="form-control" id="ped-calle">
+        </div>
+        <div class="campo-form mb-2">
+          <label>Número *</label>
+          <input type="text" class="form-control" id="ped-numero">
+        </div>
+        <div class="campo-form mb-2">
+          <label>Colonia *</label>
+          <input type="text" class="form-control" id="ped-colonia">
+        </div>
+        <div class="campo-form mb-2">
+          <label>Código Postal *</label>
+          <input type="text" class="form-control" id="ped-cp" maxlength="5" inputmode="numeric" placeholder="Ej. 44100">
+        </div>
+        <div class="campo-form mb-2">
+          <label>Municipio *</label>
+          <input type="text" class="form-control" id="ped-municipio">
+        </div>
+        <div class="campo-form mb-2">
+          <label>Estado *</label>
+          <select class="form-select" id="ped-estado"></select>
+        </div>
+        <div class="campo-form mb-2">
+          <label>País</label>
+          <input type="text" class="form-control" id="ped-pais" value="México" readonly>
+        </div>
+      </div>`;
+
+    overlay.querySelector('.modal-sistema-mensaje').innerHTML = guardadas + campos;
+    acciones.innerHTML = `
+      <button type="button" class="btn-ghost btn-sm px-4 modal-cancelar">Cancelar</button>
+      <button type="button" class="btn-negro btn-sm px-4 modal-generar-pedido">Generar pedido</button>`;
     overlay.classList.add('visible');
 
-    overlay.querySelectorAll('.opcion-domicilio').forEach((boton) => {
-      boton.addEventListener('click', async () => {
-        overlay.classList.remove('visible');
-        try {
-          const resultado = await peticion('/ordenes', {
-            method: 'POST',
-            body: JSON.stringify({ id_domicilio: Number(boton.dataset.id) }),
-          });
-          mostrarAlerta('Pedido generado', `Tu pedido ${resultado.orden.folio_orden} fue creado con éxito.`, 'exito');
-          setTimeout(() => { window.location.href = 'pedidos.html'; }, 1200);
-        } catch (error) {
-          mostrarAlerta('No se pudo generar', error.message, 'error');
-        }
+    llenarEstadosDesde('ped-estado');
+    const cp = document.getElementById('ped-cp');
+    cp.addEventListener('input', () => {
+      if (/^\d{5}$/.test(cp.value.trim())) autocompletarCodigoPostalDesde(cp, 'ped-municipio', 'ped-estado');
+    });
+
+    overlay.querySelector('.modal-cancelar').addEventListener('click', () => overlay.classList.remove('visible'));
+
+    const btnAgregar = overlay.querySelector('.btn-agregar-direccion');
+    if (btnAgregar) {
+      btnAgregar.addEventListener('click', () => {
+        overlay.querySelectorAll('input[name="domicilio"]').forEach((r) => (r.disabled = true));
+        overlay.querySelector('.form-nueva-direccion').classList.remove('d-none');
+        overlay.querySelector('.btn-agregar-direccion').classList.add('d-none');
       });
+    }
+
+    overlay.querySelector('.modal-generar-pedido').addEventListener('click', async () => {
+      const radio = overlay.querySelector('input[name="domicilio"]:checked:not(:disabled)');
+      let idDomicilio = radio ? Number(radio.value) : null;
+
+      if (!idDomicilio) {
+        const camposRequeridos = ['ped-nombre', 'ped-calle', 'ped-numero', 'ped-colonia', 'ped-cp', 'ped-municipio', 'ped-estado'];
+        const faltantes = camposRequeridos.filter((id) => {
+          const input = document.getElementById(id);
+          const valido = input.value.trim() !== '';
+          input.classList.toggle('invalido', !valido);
+          return !valido;
+        });
+        if (faltantes.length) {
+          mostrarAlerta('Dirección incompleta', 'Completa los campos obligatorios de la dirección.', 'error');
+          return;
+        }
+
+        try {
+          const nuevo = await peticion('/domicilios', {
+            method: 'POST',
+            body: JSON.stringify({
+              nombre: document.getElementById('ped-nombre').value.trim() || null,
+              calle: document.getElementById('ped-calle').value.trim(),
+              numero: document.getElementById('ped-numero').value.trim(),
+              colonia: document.getElementById('ped-colonia').value.trim(),
+              codigo_postal: document.getElementById('ped-cp').value.trim(),
+              municipio: document.getElementById('ped-municipio').value.trim(),
+              estado: document.getElementById('ped-estado').value.trim(),
+              pais: 'México',
+            }),
+          });
+          idDomicilio = nuevo.domicilio.id_domicilio;
+        } catch (error) {
+          mostrarAlerta('No se pudo guardar la dirección', error.message, 'error');
+          return;
+        }
+      }
+
+      overlay.classList.remove('visible');
+      try {
+        const resultado = await peticion('/ordenes', {
+          method: 'POST',
+          body: JSON.stringify({ id_domicilio: idDomicilio }),
+        });
+        mostrarAlerta('Pedido generado', `Tu pedido ${resultado.orden.folio_orden} fue creado con éxito.`, 'exito');
+        setTimeout(() => { window.location.href = 'pedidos.html'; }, 1200);
+      } catch (error) {
+        mostrarAlerta('No se pudo generar', error.message, 'error');
+      }
     });
   } catch (error) {
     mostrarAlerta('No se pudo generar', error.message, 'error');
