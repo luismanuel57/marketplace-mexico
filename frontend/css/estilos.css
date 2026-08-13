@@ -480,6 +480,11 @@ a { color: inherit; text-decoration: none; }
   color: var(--acento);
 }
 
+.text-acento {
+  color: var(--acento-texto);
+  font-weight: 600;
+}
+
 .titulo-seccion {
   border-bottom: 2px solid var(--acento);
   display: inline-block;

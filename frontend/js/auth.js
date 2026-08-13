@@ -113,6 +113,11 @@ async function iniciarSesion(e) {
 }
 
 function leerDireccion() {
+  const campos = ['reg-nombre-domicilio', 'reg-calle', 'reg-numero', 'reg-colonia', 'reg-cp', 'campo-municipio', 'campo-estado'];
+  const vacia = campos.every((id) => !document.getElementById(id).value.trim());
+  // La dirección es opcional en el registro: si viene vacía no se guarda nada
+  // (el domicilio se pide al generar un pedido en la bolsa).
+  if (vacia) return null;
   return {
     nombre: document.getElementById('reg-nombre-domicilio').value.trim() || null,
     calle: document.getElementById('reg-calle').value.trim(),
@@ -127,6 +132,10 @@ function leerDireccion() {
 
 function validarDireccion() {
   const campos = ['reg-calle', 'reg-colonia', 'reg-cp', 'campo-municipio', 'campo-estado'];
+  // Opcional: si el usuario dejó todo vacío, se salta la validación.
+  const vacia = campos.every((id) => !document.getElementById(id).value.trim());
+  if (vacia) return true;
+  // Si empezó a llenar, la dirección debe quedar completa.
   const validos = campos.map((id) => {
     const input = document.getElementById(id);
     const valido = input.value.trim() !== '';

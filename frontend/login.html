@@ -94,14 +94,14 @@
           </div>
         </div>
 
-        <h2 class="h6 mt-4 mb-3 text-uppercase text-muted">Datos de envío</h2>
+        <h2 class="h6 mt-4 mb-3 text-uppercase text-muted">Datos de envío <span class="text-acento">(opcional)</span></h2>
         <div class="row g-3">
           <div class="col-12 campo-form">
             <label for="reg-nombre-domicilio">Nombre de la dirección</label>
             <input type="text" class="form-control" id="reg-nombre-domicilio" placeholder="Casa, Oficina, etc.">
           </div>
           <div class="col-md-8 campo-form">
-            <label for="reg-calle">Calle *</label>
+            <label for="reg-calle">Calle</label>
             <input type="text" class="form-control" id="reg-calle" placeholder="Av. México">
             <p class="mensaje-error">Campo obligatorio.</p>
           </div>
@@ -110,36 +110,37 @@
             <input type="text" class="form-control" id="reg-numero" placeholder="100">
           </div>
           <div class="col-md-6 campo-form">
-            <label for="reg-colonia">Colonia *</label>
+            <label for="reg-colonia">Colonia</label>
             <input type="text" class="form-control" id="reg-colonia" placeholder="Centro">
             <p class="mensaje-error">Campo obligatorio.</p>
           </div>
           <div class="col-md-6 campo-form">
-            <label for="reg-cp">Código postal *</label>
+            <label for="reg-cp">Código postal</label>
             <input type="text" class="form-control" id="reg-cp" placeholder="44100" maxlength="5" inputmode="numeric">
             <p class="mensaje-error">Código postal inválido (5 dígitos).</p>
           </div>
           <div class="col-md-7 campo-form">
-            <label for="campo-municipio">Municipio *</label>
+            <label for="campo-municipio">Municipio</label>
             <input type="text" class="form-control" id="campo-municipio" placeholder="Se llena con el código postal">
             <p class="mensaje-error">Campo obligatorio.</p>
           </div>
           <div class="col-md-5 campo-form">
-            <label for="campo-estado">Estado *</label>
+            <label for="campo-estado">Estado</label>
             <select class="form-select" id="campo-estado">
               <option value="">Selecciona...</option>
             </select>
             <p class="mensaje-error">Campo obligatorio.</p>
           </div>
           <div class="col-12 campo-form">
-            <label for="campo-pais">País *</label>
+            <label for="campo-pais">País</label>
             <input type="text" class="form-control" id="campo-pais" value="México" readonly>
           </div>
         </div>
 
         <p class="small text-muted mt-3 mb-4">
           <i class="bi bi-info-circle"></i>
-          Al ingresar tu código postal, municipio y estado se completan automáticamente.
+          La dirección es opcional: si la dejas vacía, la completas al generar un pedido.
+          Si escribes el código postal, municipio y estado se completan automáticamente.
         </p>
 
         <button type="submit" class="btn-negro w-100"><i class="bi bi-person-plus me-1"></i>Crear cuenta</button>
