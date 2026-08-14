@@ -123,7 +123,45 @@ https://drive.google.com/uc?export=view&id=<ID_DEL_ARCHIVO>
 
 ## Capturas de pantalla
 
-*(Se agregan al finalizar la interfaz.)*
+## comprador
+-- tienda
+<img width="1917" height="916" alt="image" src="https://github.com/user-attachments/assets/1f42a476-c5de-4332-a1f5-dc3ebd97542b" />
+
+--catalogo
+<img width="1917" height="910" alt="image" src="https://github.com/user-attachments/assets/e59b03bf-7fbd-4cab-95bb-a57afe2da923" />
+
+--bolsa 
+<img width="1917" height="915" alt="image" src="https://github.com/user-attachments/assets/a6f9033a-eb51-483f-8f3e-50404840d956" />
+
+
+--mis pedidos
+<img width="1917" height="912" alt="image" src="https://github.com/user-attachments/assets/9425f849-9c3f-4e2c-b296-6954eec6356f" />
+
+## vendedor
+
+--mis articulos
+<img width="1917" height="907" alt="image" src="https://github.com/user-attachments/assets/c0e2bc68-892c-42e9-8fc5-ad3822c359f0" />
+
+--mis ventas
+<img width="1917" height="902" alt="image" src="https://github.com/user-attachments/assets/45ecad19-fef3-4733-bb5e-e70a449d49b9" />
+
+## administrdor
+
+--acticulos
+<img width="1917" height="910" alt="image" src="https://github.com/user-attachments/assets/e9f5652b-fafb-4811-b60e-190d064ad0f7" />
+
+--pedidos
+<img width="1917" height="907" alt="image" src="https://github.com/user-attachments/assets/aa0a1e74-bc40-4af5-bc9c-d2aa49d7fd4a" />
+
+--clientes
+<img width="1917" height="910" alt="image" src="https://github.com/user-attachments/assets/d89dd8d3-d504-4129-a7b7-d18754072aeb" />
+
+--vendedores
+<img width="1917" height="915" alt="image" src="https://github.com/user-attachments/assets/c2903da3-59e9-4ad3-b969-d3b6c80a010f" />
+
+--bitacora
+<img width="1917" height="910" alt="image" src="https://github.com/user-attachments/assets/27811ae3-4a78-4612-880b-271baaf1316b" />
+
 
 ## URL de implementacion
 
