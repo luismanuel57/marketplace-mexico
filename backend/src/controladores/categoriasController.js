@@ -1,5 +1,6 @@
 import pool from '../db.js';
 import { registrarBitacora } from '../servicios/bitacoraService.js';
+import { asegurarCarpetaCategoria } from '../servicios/driveService.js';
 
 // El id de ruta debe ser numérico: un valor como "abc" haría que PostgreSQL
 // dispare el error 22P02 (invalid input syntax for type integer) y terminaría
@@ -58,7 +59,21 @@ export async function crear(req, res) {
       detalle: { nombre: resultado.rows[0].nombre },
       ip: req.ip,
     });
-    res.status(201).json({ mensaje: 'Categoría creada', categoria: resultado.rows[0] });
+    // La carpeta de Drive se crea justo después del INSERT: el 201 se responde
+    // igual aunque Drive falle (la categoría no depende de Drive). El nombre
+    // usado es el mismo nombreLimpio validado y trimeado que se insertó.
+    let avisoDrive = null;
+    try {
+      await asegurarCarpetaCategoria(nombreLimpio);
+    } catch (error) {
+      avisoDrive = 'No se pudo crear la carpeta en Google Drive: ' + error.message;
+      console.error('Error al crear carpeta de categoría en Drive:', error.message);
+    }
+    res.status(201).json({
+      mensaje: 'Categoría creada',
+      categoria: resultado.rows[0],
+      aviso_drive: avisoDrive,
+    });
   } catch (error) {
     if (error.code === '23505') {
       return res.status(409).json({ error: 'La categoría ya existe' });

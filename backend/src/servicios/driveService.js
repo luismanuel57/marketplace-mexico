@@ -81,6 +81,15 @@ async function obtenerCarpetaCategoria(drive, categoria) {
   return id;
 }
 
+// Asegura la carpeta de una categoría en Google Drive en el momento de
+// crearla, sin esperar a la primera subida de imagen. Reutiliza el cache y
+// la lógica de obtenerCarpetaCategoria (sin doble cacheo).
+export async function asegurarCarpetaCategoria(nombreCategoria) {
+  const cliente = obtenerClienteOAuth();
+  const drive = google.drive({ version: 'v3', auth: cliente });
+  return obtenerCarpetaCategoria(drive, nombreCategoria);
+}
+
 export async function crearEstructuraCategorias(nombresCategorias) {
   const cliente = obtenerClienteOAuth();
   const drive = google.drive({ version: 'v3', auth: cliente });
