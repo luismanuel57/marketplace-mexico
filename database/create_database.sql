@@ -174,3 +174,22 @@ CREATE TABLE bitacora (
 
 CREATE INDEX idx_bitacora_cliente ON bitacora(id_cliente);
 CREATE INDEX idx_bitacora_fecha   ON bitacora(fecha);
+
+-- ------------------------------------------------------------
+-- codigos_postales (catálogo SEPOMEX para autocompletado de CP)
+-- La restricción UNIQUE evita repetidos al cargar con
+-- INSERT ... ON CONFLICT DO NOTHING (un mismo CP y colonia
+-- puede aparecer en varios municipios/estados).
+-- ------------------------------------------------------------
+CREATE TABLE codigos_postales (
+  id           SERIAL PRIMARY KEY,
+  cp           VARCHAR(5)   NOT NULL,
+  colonia      VARCHAR(120) NOT NULL,
+  tipo_colonia VARCHAR(60),
+  municipio    VARCHAR(120) NOT NULL,
+  estado       VARCHAR(80)  NOT NULL,
+  ciudad       VARCHAR(120),
+  UNIQUE (cp, colonia, municipio)
+);
+
+CREATE INDEX idx_cp_codigo ON codigos_postales(cp);
