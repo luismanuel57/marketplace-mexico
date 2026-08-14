@@ -108,15 +108,22 @@ export async function detalle(req, res) {
   try {
     const { id } = req.params;
 
-    const orden = await pool.query(
-      `SELECT o.id_orden, o.folio_orden, o.fecha_orden, o.subtotal, o.envio, o.total, o.estado,
-              cl.nombre, cl.apellido_paterno, d.calle, d.numero, d.colonia, d.municipio, d.estado AS estado_domicilio, d.codigo_postal, d.pais
-       FROM ordenes o
-       JOIN clientes cl ON cl.id_cliente = o.id_cliente
-       JOIN domicilios d ON d.id_domicilio = o.id_domicilio
-       WHERE o.id_orden = $1`,
-      [id]
-    );
+    // Un comprador solo puede ver sus propias órdenes; el administrador puede ver cualquier orden.
+    const esAdmin = req.cliente && req.cliente.rol === 'administrador';
+    const consulta = esAdmin
+      ? `SELECT o.id_orden, o.folio_orden, o.fecha_orden, o.subtotal, o.envio, o.total, o.estado,
+                cl.nombre, cl.apellido_paterno, d.calle, d.numero, d.colonia, d.municipio, d.estado AS estado_domicilio, d.codigo_postal, d.pais
+         FROM ordenes o
+         JOIN clientes cl ON cl.id_cliente = o.id_cliente
+         JOIN domicilios d ON d.id_domicilio = o.id_domicilio
+         WHERE o.id_orden = $1`
+      : `SELECT o.id_orden, o.folio_orden, o.fecha_orden, o.subtotal, o.envio, o.total, o.estado,
+                cl.nombre, cl.apellido_paterno, d.calle, d.numero, d.colonia, d.municipio, d.estado AS estado_domicilio, d.codigo_postal, d.pais
+         FROM ordenes o
+         JOIN clientes cl ON cl.id_cliente = o.id_cliente
+         JOIN domicilios d ON d.id_domicilio = o.id_domicilio
+         WHERE o.id_orden = $1 AND o.id_cliente = $2`;
+    const orden = await pool.query(consulta, esAdmin ? [id] : [id, req.cliente.id]);
     if (orden.rows.length === 0) {
       return res.status(404).json({ error: 'Pedido no encontrado' });
     }
