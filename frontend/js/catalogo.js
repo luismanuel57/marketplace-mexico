@@ -10,7 +10,7 @@ async function cargarCategoriasFiltro() {
   try {
     categoriasCache = await peticion('/categorias');
     select.innerHTML = `<option value="">Todas</option>` +
-      categoriasCache.map((c) => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
+      categoriasCache.map((c) => `<option value="${esc(c.nombre)}">${esc(c.nombre)}</option>`).join('');
   } catch {
     select.innerHTML = `<option value="">Todas</option>`;
   }

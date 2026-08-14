@@ -27,7 +27,7 @@ async function cargarDetalle() {
         </div>
         <div class="col-lg-6">
           <div class="d-flex align-items-center gap-2 mb-2">
-            <span class="tarjeta-categoria">${articulo.categoria}</span>
+            <span class="tarjeta-categoria">${esc(articulo.categoria)}</span>
             ${articulo.marca ? `<span class="estado-pastilla">${articulo.marca}</span>` : ''}
           </div>
           <h1 class="h3 fw-bold mb-2">${articulo.nombre}</h1>

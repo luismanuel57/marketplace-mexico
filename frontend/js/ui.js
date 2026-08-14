@@ -1,3 +1,11 @@
+// Escapa caracteres HTML para inyectar texto de la API sin romper el DOM.
+// Se define aquí porque ui.js se carga en todas las páginas: así cualquier
+// script que pinte datos de la API usa esta única implementación en vez de
+// duplicarla localmente.
+function esc(valor) {
+  return String(valor ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 let modalResolucion = null;
 
 function crearModalSistema() {

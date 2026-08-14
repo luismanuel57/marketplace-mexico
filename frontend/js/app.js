@@ -74,7 +74,7 @@ async function cargarCategorias() {
       .map((c) => `<div class="col-6 col-md-4 col-lg-3">
           <a class="tarjeta h-100 d-block text-center p-4" href="catalogo.html?categoria=${encodeURIComponent(c.nombre)}">
             <i class="bi ${iconoCategoria(c.nombre)} icono-acento fs-4"></i>
-            <h6 class="mt-3 mb-0">${c.nombre}</h6>
+            <h6 class="mt-3 mb-0">${esc(c.nombre)}</h6>
           </a>
         </div>`)
       .join('');
@@ -93,7 +93,7 @@ function tarjetaArticulo(articulo) {
                onerror="this.onerror=null;this.src='https://placehold.co/600x400/f5f5f5/9a9a9a?text=Tianguis';">
         </a>
         <div class="p-3 d-flex flex-column flex-grow-1">
-          ${articulo.categoria ? `<span class="tarjeta-categoria mb-1">${articulo.categoria}</span>` : ''}
+          ${articulo.categoria ? `<span class="tarjeta-categoria mb-1">${esc(articulo.categoria)}</span>` : ''}
           <a href="detalle.html?id=${articulo.id_articulo}" class="text-decoration-none text-body">
             <h6 class="mb-1">${articulo.nombre}</h6>
           </a>

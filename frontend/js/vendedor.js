@@ -1,7 +1,3 @@
-function esc(valor) {
-  return String(valor ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
-
 function verificarVendedor() {
   const contenedor = document.getElementById('contenido-vendedor');
   const usuario = obtenerUsuario();
@@ -30,7 +26,7 @@ async function cargarArticulosVendedor() {
                          onerror="this.onerror=null;this.src='https://placehold.co/40x40/f5f5f5/9a9a9a?text=?';">
                   </td>
                   <td>${a.nombre}</td>
-                  <td>${a.categoria}</td>
+                  <td>${esc(a.categoria)}</td>
                   <td>${formatearPrecio(a.precio_mxn)}</td>
                   <td>${a.existencias}</td>
                   <td><span class="estado-pastilla ${claseEstado(a.estatus)}"><i class="bi ${iconoEstado(a.estatus)} me-1"></i>${a.estatus}</span></td>
@@ -212,7 +208,6 @@ async function mostrarFormularioArticulo(articulo = null) {
   const overlay = crearModalSistema();
   const esEdicion = !!articulo;
   const datos = articulo || {};
-  const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   let categorias;
   try {
     categorias = await peticion('/categorias');
@@ -223,6 +218,16 @@ async function mostrarFormularioArticulo(articulo = null) {
   const opciones = categorias
     .map((c) => `<option value="${c.id_categoria}" ${c.id_categoria === datos.id_categoria ? 'selected' : ''}>${esc(c.nombre)}</option>`)
     .join('');
+
+  // Si se edita un artículo cuya categoría fue desactivada, la lista de activas
+  // no la incluye: el navegador reasignaría el artículo a la primera opción en
+  // silencio. Se agrega la categoría del artículo marcada como (inactiva).
+  let opcionesFinal = opciones;
+  if (esEdicion && datos.id_categoria && !categorias.some((c) => c.id_categoria === datos.id_categoria)) {
+    if (datos.categoria) {
+      opcionesFinal += `<option value="${datos.id_categoria}" selected>${esc(datos.categoria)} (inactiva)</option>`;
+    }
+  }
 
   overlay.querySelector('.modal-sistema-titulo').textContent = esEdicion ? 'Editar artículo' : 'Nuevo artículo';
   overlay.querySelector('.modal-sistema-mensaje').innerHTML = `
@@ -236,7 +241,7 @@ async function mostrarFormularioArticulo(articulo = null) {
     </div>
     <div class="campo-form mb-2">
       <label>Categoría *</label>
-      <select class="form-select" id="art-categoria">${opciones}</select>
+      <select class="form-select" id="art-categoria">${opcionesFinal}</select>
     </div>
     <div class="campo-form mb-2">
       <label>Precio (MXN) *</label>

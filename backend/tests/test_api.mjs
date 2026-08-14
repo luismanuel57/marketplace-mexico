@@ -87,6 +87,90 @@ const idDetalle = bolsa2.datos.articulos.find((a) => a.id_articulo === 1).id_det
 const actualizar = await peticion('PUT', `/bolsa/articulos/${idDetalle}`, { cantidad: 3 }, tokenComprador);
 informar('PUT /bolsa/articulos/:id (cantidad)', actualizar, 200);
 
+// --- Categorías: endpoints nuevos, guardas y validaciones (R3-004/R3-005) ---
+// Este bloque corre ANTES del bloque de órdenes a propósito: el suite tiene un
+// fallo pre-existente por drift de stock en POST /ordenes que aborta lo que
+// venga después. El login de admin se repite aquí para no depender de eso.
+const adminCat = await peticion('POST', '/auth/login', { correo: 'admin@tianguisdigital.mx', contrasena: '12345' });
+const tokenAdminCat = adminCat.datos.token;
+
+const todasSinToken = await peticion('GET', '/categorias/todas');
+informar('GET /categorias/todas sin token -> 401', todasSinToken, 401);
+
+const todasConComprador = await peticion('GET', '/categorias/todas', null, tokenComprador);
+informar('GET /categorias/todas con comprador -> 403', todasConComprador, 403);
+
+const todasConAdmin = await peticion('GET', '/categorias/todas', null, tokenAdminCat);
+informar('GET /categorias/todas con admin -> 200', todasConAdmin, 200);
+{
+  // Orden: ninguna inactiva puede aparecer antes de una activa (R3-001).
+  let viInactiva = false;
+  let ordenOk = true;
+  for (const c of todasConAdmin.datos) {
+    if (c.estatus === 'inactivo') viInactiva = true;
+    if (viInactiva && c.estatus === 'activo') { ordenOk = false; break; }
+  }
+  pasos++;
+  if (!ordenOk) fallos++;
+  console.log(`${ordenOk ? 'PASS' : 'FAIL'} [${todasConAdmin.status}] categorias/todas ordena activas primero`);
+  if (!ordenOk) console.log('     ->', JSON.stringify(todasConAdmin.datos.map((c) => c.estatus)));
+}
+
+const estatusInvalido = await peticion('PATCH', '/categorias/1/estatus', { estatus: 'fantasma' }, tokenAdminCat);
+informar('PATCH /categorias/:id/estatus con estatus inválido -> 400', estatusInvalido, 400);
+
+const patchIdNoNumerico = await peticion('PATCH', '/categorias/abc/estatus', { estatus: 'inactivo' }, tokenAdminCat);
+informar('PATCH /categorias/abc/estatus -> 404 (no 500)', patchIdNoNumerico, 404);
+
+const deleteIdNoNumerico = await peticion('DELETE', '/categorias/abc', null, tokenAdminCat);
+informar('DELETE /categorias/abc -> 404 (no 500)', deleteIdNoNumerico, 404);
+
+const patchInexistente = await peticion('PATCH', '/categorias/99999999/estatus', { estatus: 'activo' }, tokenAdminCat);
+informar('PATCH /categorias/:id/estatus con id inexistente -> 404', patchInexistente, 404);
+
+// Categoría temporal para probar estatus y borrado sin tocar el catálogo real.
+const nombreTemp = `Test ${Date.now()}`;
+const crearTemp = await peticion('POST', '/categorias', { nombre: nombreTemp, descripcion: 'Temporal para tests' }, tokenAdminCat);
+informar('POST /categorias (temporal)', crearTemp, 201);
+const idTemp = crearTemp.datos.categoria?.id_categoria;
+
+const desactivarTemp = await peticion('PATCH', `/categorias/${idTemp}/estatus`, { estatus: 'inactivo' }, tokenAdminCat);
+informar('PATCH /categorias/:id/estatus (inactivo) -> 200', desactivarTemp, 200);
+
+const publicas = await peticion('GET', '/categorias');
+{
+  const oculta = !publicas.datos.some((c) => c.id_categoria === idTemp);
+  pasos++;
+  if (!oculta) fallos++;
+  console.log(`${oculta ? 'PASS' : 'FAIL'} [${publicas.status}] categoría inactiva no aparece en GET /categorias`);
+  if (!oculta) console.log('     ->', JSON.stringify(publicas.datos.map((c) => c.id_categoria)));
+}
+
+// DELETE sobre una categoría con artículos -> 409 (guard del borrado físico).
+{
+  const articulos = await peticion('GET', '/articulos');
+  const conArticulos = articulos.datos[0]?.categoria;
+  const objetivo = todasConAdmin.datos.find((c) => c.nombre === conArticulos);
+  if (objetivo) {
+    const deleteConArticulos = await peticion('DELETE', `/categorias/${objetivo.id_categoria}`, null, tokenAdminCat);
+    informar('DELETE /categorias/:id con artículos -> 409', deleteConArticulos, 409);
+  } else {
+    console.log('SKIP [sin artículos activos] DELETE con artículos -> 409');
+  }
+}
+
+const borrarTemp = await peticion('DELETE', `/categorias/${idTemp}`, null, tokenAdminCat);
+informar('DELETE /categorias/:id sin artículos -> 200', borrarTemp, 200);
+
+{
+  const trasBorrado = await peticion('GET', '/categorias/todas', null, tokenAdminCat);
+  const desaparecio = !trasBorrado.datos.some((c) => c.id_categoria === idTemp);
+  pasos++;
+  if (!desaparecio) fallos++;
+  console.log(`${desaparecio ? 'PASS' : 'FAIL'} [${trasBorrado.status}] la categoría temporal fue eliminada`);
+  if (!desaparecio) console.log('     ->', JSON.stringify(trasBorrado.datos.map((c) => c.nombre)));
+}
+
 const domicilio = await peticion('POST', '/domicilios', { nombre: 'Prueba Test', calle: 'Calle 1', numero: '10', colonia: 'Centro', codigo_postal: '44100', municipio: 'Guadalajara', estado: 'Jalisco' }, tokenComprador);
 informar('POST /api/domicilios', domicilio, 201);
 

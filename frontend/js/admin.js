@@ -1,10 +1,5 @@
 const vistasCargadas = {};
 
-// Escapa caracteres HTML para inyectar texto de la API sin romper el DOM.
-function esc(valor) {
-  return String(valor ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
-
 async function verificarAdmin() {
   const contenedor = document.getElementById('verificacion-admin');
   const usuario = obtenerUsuario();
@@ -86,7 +81,7 @@ async function cargarArticulosAdmin() {
                          onerror="this.onerror=null;this.src='https://placehold.co/40x40/f5f5f5/9a9a9a?text=?';">
                   </td>
                   <td>${a.nombre}</td>
-                  <td>${a.categoria}</td>
+                  <td>${esc(a.categoria)}</td>
                   <td>${formatearPrecio(a.precio_mxn)}</td>
                   <td>${a.existencias}</td>
                   <td><span class="estado-pastilla ${claseEstado(a.estatus)}"><i class="bi ${iconoEstado(a.estatus)} me-1"></i>${a.estatus}</span></td>
@@ -166,6 +161,17 @@ async function mostrarFormularioArticulo(articulo = null) {
     .map((c) => `<option value="${c.id_categoria}" ${c.id_categoria === datos.id_categoria ? 'selected' : ''}>${esc(c.nombre)}</option>`)
     .join('');
 
+  // Si se edita un artículo cuya categoría fue desactivada, la lista de activas
+  // no la incluye: el navegador reasignaría el artículo a la primera opción en
+  // silencio. Se agrega la categoría del artículo marcada como (inactiva) para
+  // conservar la selección y avisar al administrador.
+  let opcionesFinal = opciones;
+  if (esEdicion && datos.id_categoria && !categorias.some((c) => c.id_categoria === datos.id_categoria)) {
+    if (datos.categoria) {
+      opcionesFinal += `<option value="${datos.id_categoria}" selected>${esc(datos.categoria)} (inactiva)</option>`;
+    }
+  }
+
   overlay.querySelector('.modal-sistema-titulo').textContent = esEdicion ? 'Editar artículo' : 'Nuevo artículo';
   overlay.querySelector('.modal-sistema-mensaje').innerHTML = `
     <div class="campo-form mb-2">
@@ -178,7 +184,7 @@ async function mostrarFormularioArticulo(articulo = null) {
     </div>
     <div class="campo-form mb-2">
       <label>Categoría *</label>
-      <select class="form-select" id="art-categoria">${opciones}</select>
+      <select class="form-select" id="art-categoria">${opcionesFinal}</select>
     </div>
     <div class="campo-form mb-2">
       <label>Precio (MXN) *</label>
@@ -352,13 +358,16 @@ async function cargarCategoriasAdmin() {
   }
 }
 
-async function mostrarFormularioCategoria(categoria = null) {
+// avisoError: mensaje opcional que se pinta dentro del formulario cuando se
+// reabre tras un fallo, para que el usuario sepa por qué no se guardó.
+async function mostrarFormularioCategoria(categoria = null, avisoError = null) {
   const overlay = crearModalSistema();
   const esEdicion = !!categoria;
   const datos = categoria || {};
 
   overlay.querySelector('.modal-sistema-titulo').textContent = esEdicion ? 'Editar categoría' : 'Nueva categoría';
   overlay.querySelector('.modal-sistema-mensaje').innerHTML = `
+    ${avisoError ? `<p class="text-danger small mb-2"><i class="bi bi-exclamation-triangle me-1"></i>${esc(avisoError)}</p>` : ''}
     <div class="campo-form mb-2">
       <label>Nombre *</label>
       <input type="text" class="form-control" id="cat-nombre" maxlength="60" value="${esc(datos.nombre)}">
@@ -394,7 +403,11 @@ async function mostrarFormularioCategoria(categoria = null) {
       refrescarSelectCategorias();
     } catch (error) {
       botonGuardar.disabled = false;
+      // El modal es singleton y el alert sobrescribiría el formulario: se captura
+      // lo escrito y se reabre el formulario con esos valores para no perderlos.
+      overlay.classList.remove('visible');
       mostrarAlerta(esEdicion ? 'No se pudo actualizar' : 'No se pudo crear', error.message, 'error');
+      mostrarFormularioCategoria({ ...datos, nombre, descripcion }, error.message);
     }
   });
 }
@@ -410,7 +423,20 @@ async function refrescarSelectCategorias() {
     select.innerHTML = categorias
       .map((c) => `<option value="${c.id_categoria}">${esc(c.nombre)}</option>`)
       .join('');
-    if (seleccion) select.value = seleccion;
+    if (seleccion) {
+      select.value = seleccion;
+      // La categoría seleccionada ya no está entre las activas (se desactivó):
+      // se re-agrega marcada como (inactiva) para no reasignar el artículo en
+      // silencio a la primera opción.
+      if (select.value !== seleccion) {
+        const todas = await peticion('/categorias/todas');
+        const desactivada = todas.find((c) => c.id_categoria === Number(seleccion));
+        if (desactivada) {
+          select.insertAdjacentHTML('beforeend',
+            `<option value="${desactivada.id_categoria}" selected>${esc(desactivada.nombre)} (inactiva)</option>`);
+        }
+      }
+    }
   } catch {
     // Si falla la actualización, el select conserva los datos anteriores.
   }
