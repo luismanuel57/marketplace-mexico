@@ -40,6 +40,25 @@ informar('GET /api/articulos/1 (detalle)', r5, 200);
 const r6 = await peticion('GET', '/categorias');
 informar('GET /api/categorias', r6, 200);
 
+// Contrato del autocompletado de código postal (ruta pública).
+const cpInvalido = await peticion('GET', '/domicilios/consulta-cp/1234');
+informar('GET /api/domicilios/consulta-cp/1234 (formato inválido) -> 400', cpInvalido, 400);
+
+const cpInexistente = await peticion('GET', '/domicilios/consulta-cp/00000');
+informar('GET /api/domicilios/consulta-cp/00000 (no existe) -> 404', cpInexistente, 404);
+
+const cpValido = await peticion('GET', '/domicilios/consulta-cp/45040');
+informar('GET /api/domicilios/consulta-cp/45040 (Zapopan, Jalisco)', cpValido, 200);
+{
+  const { estado, municipio, colonias } = cpValido.datos;
+  const completo = estado && municipio && Array.isArray(colonias) && colonias.length > 0;
+  pasos++;
+  if (!completo) fallos++;
+  console.log(`${completo ? 'PASS' : 'FAIL'} [${cpValido.status}] consulta-cp/45040 devuelve estado, municipio y colonias`);
+  if (!completo) console.log('     ->', JSON.stringify(cpValido.datos));
+  console.log('     -> estado:', estado, '| municipio:', municipio, '| colonias:', colonias.length);
+}
+
 const login = await peticion('POST', '/auth/login', { correo: 'comprador@tianguisdigital.mx', contrasena: '12345' });
 informar('POST /api/auth/login (comprador)', login, 200);
 const tokenComprador = login.datos.token;

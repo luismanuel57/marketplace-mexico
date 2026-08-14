@@ -80,8 +80,11 @@ export async function consultarCodigoPostal(req, res) {
       colonias: resultadoColonias.rows.map((fila) => fila.colonia),
     });
   } catch (error) {
-    // Solo llega aquí si el respaldo local falla por base de datos.
-    return res.status(500).json({ error: error.message });
+    // Solo llega aquí si el respaldo local falla por base de datos. La ruta
+    // es pública: se registra el detalle real pero la respuesta es genérica
+    // para no filtrar detalles internos (tablas, columnas, conexión).
+    console.error(`Error al consultar el catálogo local de códigos postales: ${error.message}`);
+    return res.status(500).json({ error: 'No se pudo consultar el código postal' });
   }
 }
 
