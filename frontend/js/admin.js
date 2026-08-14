@@ -511,9 +511,9 @@ async function cargarClientesAdmin() {
               ${clientes.map((c) => `
                 <tr>
                   <td>${c.id_cliente}</td>
-                  <td>${c.nombre} ${c.apellido_paterno || ''}</td>
-                  <td>${c.correo}</td>
-                  <td>${c.telefono || '—'}</td>
+                  <td>${esc(c.nombre)} ${c.apellido_paterno ? esc(c.apellido_paterno) : ''}</td>
+                  <td>${esc(c.correo)}</td>
+                  <td>${esc(c.telefono) || '—'}</td>
                   <td><span class="estado-pastilla">${c.rol || 'cliente'}</span></td>
                 </tr>`).join('')}
             </tbody>
@@ -664,8 +664,8 @@ async function cargarVendedoresAdmin() {
               ${vendedores.map((v) => `
                 <tr>
                   <td>${v.id_cliente}</td>
-                  <td>${v.nombre} ${v.apellido_paterno || ''}</td>
-                  <td>${v.correo}</td>
+                  <td>${esc(v.nombre)} ${v.apellido_paterno ? esc(v.apellido_paterno) : ''}</td>
+                  <td>${esc(v.correo)}</td>
                   <td>${v.total_articulos}</td>
                   <td>
                     <button type="button" class="btn-ghost btn-sm ver-articulos-vendedor" data-id="${v.id_cliente}">

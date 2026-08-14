@@ -12,7 +12,7 @@ function actualizarNavbar() {
       : '';
     const enlacePedidos = '<li class="nav-item"><a class="nav-link" href="pedidos.html"><i class="bi bi-bag me-1"></i>Mis pedidos</a></li>';
     contenedor.innerHTML = `
-      <li class="nav-item"><span class="nav-link text-muted"><i class="bi bi-person me-1"></i>Hola, ${usuario.nombre}</span></li>
+      <li class="nav-item"><span class="nav-link text-muted"><i class="bi bi-person me-1"></i>Hola, ${esc(usuario.nombre)}</span></li>
       ${enlacePedidos}
       ${enlaceVendedor}
       ${enlaceAdmin}
