@@ -1,14 +1,5 @@
-const URL_CODIGOS_POSTALES = 'https://postali.app/api/v1/mx/cp/';
-
-const ESTADOS_MEXICO = [
-  'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche',
-  'Chiapas', 'Chihuahua', 'Ciudad de México', 'Coahuila de Zaragoza',
-  'Colima', 'Durango', 'Estado de México', 'Guanajuato', 'Guerrero',
-  'Hidalgo', 'Jalisco', 'Michoacán de Ocampo', 'Morelos', 'Nayarit',
-  'Nuevo León', 'Oaxaca', 'Puebla', 'Querétaro', 'Quintana Roo',
-  'San Luis Potosí', 'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas',
-  'Tlaxcala', 'Veracruz de Ignacio de la Llave', 'Yucatán', 'Zacatecas',
-];
+// La consulta de código postal vive en direccion.js (autocompletarCodigoPostalDesde),
+// compartida con el formulario de dirección del carrito.
 
 function configurarPestanas() {
   const pestanas = document.querySelectorAll('.pestana-auth');
@@ -46,40 +37,8 @@ function mostrarErrorCampo(input, mensaje) {
   }
 }
 
-async function autocompletarCodigoPostal(input) {
-  const codigo = input.value.trim();
-  if (!/^\d{5}$/.test(codigo)) return;
-
-  const campoMunicipio = document.getElementById('campo-municipio');
-  const campoEstado = document.getElementById('campo-estado');
-
-  mostrarAlerta('Consultando...', 'Buscando el código postal en SEPOMEX.', 'info');
-  try {
-    const respuesta = await fetch(`${URL_CODIGOS_POSTALES}${codigo}`);
-    if (!respuesta.ok) throw new Error('Código postal no encontrado');
-    const datos = await respuesta.json();
-    if (!datos.estado || !datos.municipio) throw new Error('Código postal no encontrado');
-
-    campoMunicipio.value = datos.municipio;
-    campoEstado.value = datos.estado;
-    campoMunicipio.disabled = true;
-    campoEstado.disabled = true;
-    marcarCampo(campoMunicipio, true);
-    marcarCampo(campoEstado, true);
-    cerrarModal();
-  } catch (error) {
-    cerrarModal();
-    campoMunicipio.disabled = false;
-    campoEstado.disabled = false;
-    mostrarErrorCampo(input, error.message);
-  }
-}
-
 function llenarEstados() {
-  const select = document.getElementById('campo-estado');
-  if (!select) return;
-  select.innerHTML = `<option value="">Selecciona un estado...</option>` +
-    ESTADOS_MEXICO.map((e) => `<option value="${e}">${e}</option>`).join('');
+  llenarEstadosDesde('campo-estado');
 }
 
 async function iniciarSesion(e) {
@@ -266,6 +225,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const cp = document.getElementById('reg-cp');
   cp.addEventListener('input', () => {
-    if (/^\d{5}$/.test(cp.value.trim())) autocompletarCodigoPostal(cp);
+    if (/^\d{5}$/.test(cp.value.trim())) {
+      autocompletarCodigoPostalDesde(cp, 'campo-municipio', 'campo-estado', 'reg-colonia');
+    }
   });
 });

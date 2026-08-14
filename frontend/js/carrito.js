@@ -200,7 +200,7 @@ async function generarPedido() {
     llenarEstadosDesde('ped-estado');
     const cp = document.getElementById('ped-cp');
     cp.addEventListener('input', () => {
-      if (/^\d{5}$/.test(cp.value.trim())) autocompletarCodigoPostalDesde(cp, 'ped-municipio', 'ped-estado');
+      if (/^\d{5}$/.test(cp.value.trim())) autocompletarCodigoPostalDesde(cp, 'ped-municipio', 'ped-estado', 'ped-colonia');
     });
 
     overlay.querySelector('.modal-cancelar').addEventListener('click', () => overlay.classList.remove('visible'));

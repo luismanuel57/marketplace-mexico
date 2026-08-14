@@ -117,6 +117,7 @@
           <div class="col-md-6 campo-form">
             <label for="reg-cp">Código postal</label>
             <input type="text" class="form-control" id="reg-cp" placeholder="44100" maxlength="5" inputmode="numeric">
+            <small id="aviso-cp" class="text-muted"></small>
             <p class="mensaje-error">Código postal inválido (5 dígitos).</p>
           </div>
           <div class="col-md-7 campo-form">
@@ -140,7 +141,7 @@
         <p class="small text-muted mt-3 mb-4">
           <i class="bi bi-info-circle"></i>
           La dirección es opcional: si la dejas vacía, la completas al generar un pedido.
-          Si escribes el código postal, municipio y estado se completan automáticamente.
+          Si escribes el código postal, se completan automáticamente municipio, estado y colonia.
         </p>
 
         <button type="submit" class="btn-negro w-100"><i class="bi bi-person-plus me-1"></i>Crear cuenta</button>
@@ -168,6 +169,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/api.js?v=20260815"></script>
   <script src="js/ui.js?v=20260815"></script>
+  <script src="js/direccion.js?v=20260815"></script>
   <script src="js/auth.js?v=20260815"></script>
 </body>
 </html>
