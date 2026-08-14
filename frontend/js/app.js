@@ -89,13 +89,13 @@ function tarjetaArticulo(articulo) {
       <div class="tarjeta h-100 d-flex flex-column">
         <a href="detalle.html?id=${articulo.id_articulo}" class="d-block">
           <img src="${articulo.imagen_url || 'https://placehold.co/600x400/f5f5f5/9a9a9a?text=Tianguis'}"
-               class="tarjeta-img" alt="${articulo.nombre}"
+               class="tarjeta-img" alt="${esc(articulo.nombre)}"
                onerror="this.onerror=null;this.src='https://placehold.co/600x400/f5f5f5/9a9a9a?text=Tianguis';">
         </a>
         <div class="p-3 d-flex flex-column flex-grow-1">
           ${articulo.categoria ? `<span class="tarjeta-categoria mb-1">${esc(articulo.categoria)}</span>` : ''}
           <a href="detalle.html?id=${articulo.id_articulo}" class="text-decoration-none text-body">
-            <h6 class="mb-1">${articulo.nombre}</h6>
+            <h6 class="mb-1">${esc(articulo.nombre)}</h6>
           </a>
           <p class="text-muted small text-truncate mb-2">${articulo.descripcion || ''}</p>
           <div class="mt-auto d-flex align-items-center justify-content-between">

@@ -48,7 +48,7 @@ async function cargarPedidos() {
           const detalle = await peticion(`/ordenes/${boton.dataset.id}`);
           const articulos = detalle.articulos.map((a) => `
             <div class="d-flex justify-content-between py-1 border-bottom">
-              <span>${a.nombre} &times; ${a.cantidad}</span>
+              <span>${esc(a.nombre)} &times; ${a.cantidad}</span>
               <span>${formatearPrecio(a.subtotal)}</span>
             </div>`).join('');
           mostrarAlerta('Detalle del pedido',

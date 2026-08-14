@@ -85,10 +85,10 @@ function renderizarLinea(linea) {
     <div class="tarjeta p-3 mb-3">
       <div class="d-flex gap-3 align-items-center">
         <img src="${linea.imagen_url || 'https://placehold.co/120x120/f5f5f5/9a9a9a?text=TD'}"
-             alt="${linea.nombre}" class="rounded" style="width:90px;height:90px;object-fit:cover;"
+             alt="${esc(linea.nombre)}" class="rounded" style="width:90px;height:90px;object-fit:cover;"
              onerror="this.onerror=null;this.src='https://placehold.co/120x120/f5f5f5/9a9a9a?text=TD';">
         <div class="flex-grow-1">
-          <h3 class="h6 mb-1">${linea.nombre}</h3>
+          <h3 class="h6 mb-1">${esc(linea.nombre)}</h3>
           <p class="small text-muted mb-2">${formatearPrecio(linea.precio_unitario)} c/u</p>
           <div class="d-flex align-items-center gap-2">
             <button type="button" class="btn-ghost btn-sm px-2 btn-cantidad"

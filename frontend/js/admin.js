@@ -76,11 +76,11 @@ async function cargarArticulosAdmin() {
                   <td>${a.id_articulo}</td>
                   <td>
                     <img src="${a.imagen_url || 'https://placehold.co/40x40/f5f5f5/9a9a9a?text=?'}"
-                         alt="${a.nombre}" class="rounded"
+                         alt="${esc(a.nombre)}" class="rounded"
                          style="width:40px;height:40px;object-fit:cover;"
                          onerror="this.onerror=null;this.src='https://placehold.co/40x40/f5f5f5/9a9a9a?text=?';">
                   </td>
-                  <td>${a.nombre}</td>
+                  <td>${esc(a.nombre)}</td>
                   <td>${esc(a.categoria)}</td>
                   <td>${formatearPrecio(a.precio_mxn)}</td>
                   <td>${a.existencias}</td>
@@ -694,7 +694,7 @@ async function cargarVendedoresAdmin() {
           const cuerpo = articulos.map((a) => `
             <tr>
               <td>${a.id_articulo}</td>
-              <td>${a.nombre}</td>
+              <td>${esc(a.nombre)}</td>
               <td>${a.categoria}</td>
               <td>${formatearPrecio(a.precio_mxn)}</td>
               <td>${a.existencias}</td>

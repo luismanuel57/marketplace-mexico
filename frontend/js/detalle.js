@@ -15,22 +15,22 @@ async function cargarDetalle() {
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb small">
           <li class="breadcrumb-item"><a href="catalogo.html">Catálogo</a></li>
-          <li class="breadcrumb-item active">${articulo.nombre}</li>
+          <li class="breadcrumb-item active">${esc(articulo.nombre)}</li>
         </ol>
       </nav>
 
       <div class="row g-4">
         <div class="col-lg-6">
           <img src="${articulo.imagen_url || 'https://placehold.co/900x700/f5f5f5/9a9a9a?text=Tianguis'}"
-               class="detalle-imagen" alt="${articulo.nombre}"
+               class="detalle-imagen" alt="${esc(articulo.nombre)}"
                onerror="this.onerror=null;this.src='https://placehold.co/900x700/f5f5f5/9a9a9a?text=Tianguis';">
         </div>
         <div class="col-lg-6">
           <div class="d-flex align-items-center gap-2 mb-2">
             <span class="tarjeta-categoria">${esc(articulo.categoria)}</span>
-            ${articulo.marca ? `<span class="estado-pastilla">${articulo.marca}</span>` : ''}
+            ${articulo.marca ? `<span class="estado-pastilla">${esc(articulo.marca)}</span>` : ''}
           </div>
-          <h1 class="h3 fw-bold mb-2">${articulo.nombre}</h1>
+          <h1 class="h3 fw-bold mb-2">${esc(articulo.nombre)}</h1>
           <p class="text-muted">${articulo.descripcion || 'Sin descripción disponible.'}</p>
           <div class="h3 fw-bold mb-3">${formatearPrecio(articulo.precio_mxn)}</div>
           <p class="small ${agotado ? 'text-danger' : 'text-success'}">
