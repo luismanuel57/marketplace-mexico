@@ -46,7 +46,12 @@ export async function listar(req, res) {
     }
 
     if (q) {
-      condiciones.push(`a.nombre ILIKE $${siguiente++}`);
+      // Búsqueda libre: el texto puede estar en el nombre, en la categoría o
+      // en la descripción. Un solo parámetro reutilizado para las tres columnas.
+      const indice = siguiente++;
+      condiciones.push(
+        `(a.nombre ILIKE $${indice} OR c.nombre ILIKE $${indice} OR a.descripcion ILIKE $${indice})`
+      );
       valores.push(`%${q}%`);
     }
     if (categoria) {
