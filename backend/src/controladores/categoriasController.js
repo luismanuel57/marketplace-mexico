@@ -11,6 +11,19 @@ export async function listar(req, res) {
   }
 }
 
+// Todas las categorías (activas e inactivas) para el panel de administración.
+// Orden: activas primero, luego por nombre.
+export async function listarTodas(req, res) {
+  try {
+    const resultado = await pool.query(
+      'SELECT * FROM categorias ORDER BY estatus DESC, nombre'
+    );
+    res.json(resultado.rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
 export async function crear(req, res) {
   try {
     const { nombre, descripcion } = req.body;
@@ -51,17 +64,50 @@ export async function modificar(req, res) {
   }
 }
 
-export async function desactivar(req, res) {
+// Activa o desactiva una categoría. Sustituye al antiguo desactivar:
+// el desactivado ahora es un cambio de estatus explícito vía PATCH.
+export async function cambiarEstatus(req, res) {
   try {
     const { id } = req.params;
+    const { estatus } = req.body;
+    if (!['activo', 'inactivo'].includes(estatus)) {
+      return res.status(400).json({ error: 'El estatus debe ser activo o inactivo' });
+    }
     const resultado = await pool.query(
       'UPDATE categorias SET estatus = $2 WHERE id_categoria = $1 RETURNING id_categoria, nombre, estatus',
-      [id, 'inactivo']
+      [id, estatus]
     );
     if (resultado.rows.length === 0) {
       return res.status(404).json({ error: 'Categoría no encontrada' });
     }
-    res.json({ mensaje: 'Categoría desactivada', categoria: resultado.rows[0] });
+    res.json({
+      mensaje: estatus === 'activo' ? 'Categoría activada' : 'Categoría desactivada',
+      categoria: resultado.rows[0],
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+// Borrado físico: solo se permite cuando la categoría no tiene artículos asociados.
+export async function eliminar(req, res) {
+  try {
+    const { id } = req.params;
+    const existe = await pool.query('SELECT 1 FROM categorias WHERE id_categoria = $1', [id]);
+    if (existe.rows.length === 0) {
+      return res.status(404).json({ error: 'Categoría no encontrada' });
+    }
+    const conArticulos = await pool.query(
+      'SELECT 1 FROM articulos WHERE id_categoria = $1 LIMIT 1',
+      [id]
+    );
+    if (conArticulos.rows.length > 0) {
+      return res.status(409).json({
+        error: 'No se puede eliminar: la categoría tiene artículos asociados. Desactívala en su lugar.',
+      });
+    }
+    await pool.query('DELETE FROM categorias WHERE id_categoria = $1', [id]);
+    res.json({ mensaje: 'Categoría eliminada' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

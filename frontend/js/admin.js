@@ -1,5 +1,10 @@
 const vistasCargadas = {};
 
+// Escapa caracteres HTML para inyectar texto de la API sin romper el DOM.
+function esc(valor) {
+  return String(valor ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 async function verificarAdmin() {
   const contenedor = document.getElementById('verificacion-admin');
   const usuario = obtenerUsuario();
@@ -16,12 +21,14 @@ async function verificarAdmin() {
   contenedor.innerHTML = `
     <div class="d-flex gap-2 mb-4 flex-wrap">
       <button type="button" class="pestana-auth activa" data-vista="vista-articulos"><i class="bi bi-box-seam me-1"></i>Artículos</button>
+      <button type="button" class="pestana-auth" data-vista="vista-categorias"><i class="bi bi-tags me-1"></i>Categorías</button>
       <button type="button" class="pestana-auth" data-vista="vista-pedidos"><i class="bi bi-receipt me-1"></i>Pedidos</button>
       <button type="button" class="pestana-auth" data-vista="vista-clientes"><i class="bi bi-people me-1"></i>Clientes</button>
       <button type="button" class="pestana-auth" data-vista="vista-vendedores"><i class="bi bi-shop me-1"></i>Vendedores</button>
       <button type="button" class="pestana-auth" data-vista="vista-bitacora"><i class="bi bi-journal-text me-1"></i>Bitácora</button>
     </div>
     <div id="vista-articulos"></div>
+    <div id="vista-categorias" class="d-none"></div>
     <div id="vista-pedidos" class="d-none"></div>
     <div id="vista-clientes" class="d-none"></div>
     <div id="vista-vendedores" class="d-none"></div>
@@ -29,6 +36,7 @@ async function verificarAdmin() {
 
   const cargarVista = {
     'vista-articulos': cargarArticulosAdmin,
+    'vista-categorias': cargarCategoriasAdmin,
     'vista-pedidos': cargarPedidosAdmin,
     'vista-clientes': cargarClientesAdmin,
     'vista-vendedores': cargarVendedoresAdmin,
@@ -147,7 +155,6 @@ async function mostrarFormularioArticulo(articulo = null) {
   const overlay = crearModalSistema();
   const esEdicion = !!articulo;
   const datos = articulo || {};
-  const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   let categorias;
   try {
     categorias = await peticion('/categorias');
@@ -259,6 +266,154 @@ async function mostrarFormularioArticulo(articulo = null) {
       preview.classList.add('d-none');
     }
   });
+}
+
+async function cargarCategoriasAdmin() {
+  const contenedor = document.getElementById('vista-categorias');
+  try {
+    const categorias = await peticion('/categorias/todas');
+    contenedor.innerHTML = `
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 mb-0"><i class="bi bi-tags icono-acento me-1"></i>Categorías</h2>
+        <button type="button" class="btn-negro btn-sm" id="btn-nueva-categoria"><i class="bi bi-plus-circle me-1"></i>Nueva categoría</button>
+      </div>
+      <div class="tarjeta p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="small text-muted">
+              <tr><th>ID</th><th>Nombre</th><th>Descripción</th><th>Estatus</th><th>Fecha de creación</th><th></th></tr>
+            </thead>
+            <tbody>
+              ${categorias.map((c) => `
+                <tr>
+                  <td>${c.id_categoria}</td>
+                  <td>${esc(c.nombre)}</td>
+                  <td>${esc(c.descripcion) || '—'}</td>
+                  <td><span class="estado-pastilla ${c.estatus === 'activo' ? 'estado-exito' : ''}"><i class="bi ${iconoEstado(c.estatus)} me-1"></i>${c.estatus}</span></td>
+                  <td>${new Date(c.fecha_creacion).toLocaleDateString('es-MX')}</td>
+                  <td>
+                    <button type="button" class="btn-ghost btn-sm editar-categoria" data-id="${c.id_categoria}"><i class="bi bi-pencil-square me-1"></i>Editar</button>
+                    ${c.estatus === 'activo'
+                      ? `<button type="button" class="btn-ghost btn-sm cambiar-estatus-categoria" data-id="${c.id_categoria}" data-estatus="inactivo"><i class="bi bi-toggle-off me-1"></i>Desactivar</button>`
+                      : `<button type="button" class="btn-ghost btn-sm cambiar-estatus-categoria" data-id="${c.id_categoria}" data-estatus="activo"><i class="bi bi-toggle-on me-1"></i>Activar</button>`}
+                    <button type="button" class="btn-ghost btn-sm eliminar-categoria" data-id="${c.id_categoria}"><i class="bi bi-trash me-1"></i>Eliminar</button>
+                  </td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+
+    document.getElementById('btn-nueva-categoria').addEventListener('click', () => mostrarFormularioCategoria());
+    document.querySelectorAll('.editar-categoria').forEach((boton) => {
+      boton.addEventListener('click', () => {
+        const cat = categorias.find((c) => c.id_categoria === Number(boton.dataset.id));
+        if (!cat) return;
+        mostrarFormularioCategoria(cat);
+      });
+    });
+    document.querySelectorAll('.cambiar-estatus-categoria').forEach((boton) => {
+      boton.addEventListener('click', async () => {
+        const nuevoEstatus = boton.dataset.estatus;
+        const activar = nuevoEstatus === 'activo';
+        if (!activar) {
+          const confirmar = await mostrarConfirmacion('Desactivar categoría', 'La categoría dejará de aparecer en el catálogo y en el formulario de artículos. ¿Continuar?');
+          if (!confirmar) return;
+        }
+        try {
+          await peticion(`/categorias/${boton.dataset.id}/estatus`, {
+            method: 'PATCH',
+            body: JSON.stringify({ estatus: nuevoEstatus }),
+          });
+          mostrarAlerta(activar ? 'Categoría activada' : 'Categoría desactivada', activar ? 'La categoría volvió a estar disponible.' : 'La categoría ya no está disponible.', 'exito');
+          cargarCategoriasAdmin();
+          refrescarSelectCategorias();
+        } catch (error) {
+          mostrarAlerta('No se pudo cambiar el estatus', error.message, 'error');
+        }
+      });
+    });
+    document.querySelectorAll('.eliminar-categoria').forEach((boton) => {
+      boton.addEventListener('click', async () => {
+        const confirmar = await mostrarConfirmacion('Eliminar categoría', 'La categoría se eliminará de forma permanente. Esta acción no se puede deshacer.', 'Eliminar');
+        if (!confirmar) return;
+        try {
+          await peticion(`/categorias/${boton.dataset.id}`, { method: 'DELETE' });
+          mostrarAlerta('Categoría eliminada', 'La categoría se eliminó correctamente.', 'exito');
+          cargarCategoriasAdmin();
+          refrescarSelectCategorias();
+        } catch (error) {
+          mostrarAlerta('No se pudo eliminar', error.message, 'error');
+        }
+      });
+    });
+  } catch (error) {
+    contenedor.innerHTML = `<p class="text-danger">${error.message}</p>`;
+  }
+}
+
+async function mostrarFormularioCategoria(categoria = null) {
+  const overlay = crearModalSistema();
+  const esEdicion = !!categoria;
+  const datos = categoria || {};
+
+  overlay.querySelector('.modal-sistema-titulo').textContent = esEdicion ? 'Editar categoría' : 'Nueva categoría';
+  overlay.querySelector('.modal-sistema-mensaje').innerHTML = `
+    <div class="campo-form mb-2">
+      <label>Nombre *</label>
+      <input type="text" class="form-control" id="cat-nombre" maxlength="60" value="${esc(datos.nombre)}">
+    </div>
+    <div class="campo-form mb-2">
+      <label>Descripción</label>
+      <textarea class="form-control" id="cat-descripcion" rows="2" maxlength="200">${esc(datos.descripcion)}</textarea>
+    </div>`;
+  overlay.querySelector('.modal-sistema-acciones').innerHTML = `
+    <button type="button" class="btn-ghost btn-sm px-4 modal-cancelar">Cancelar</button>
+    <button type="button" class="btn-negro btn-sm px-4 modal-guardar"><i class="bi bi-check-lg me-1"></i>Guardar</button>`;
+  overlay.classList.add('visible');
+
+  overlay.querySelector('.modal-cancelar').addEventListener('click', () => overlay.classList.remove('visible'));
+  overlay.querySelector('.modal-guardar').addEventListener('click', async () => {
+    const nombre = document.getElementById('cat-nombre').value.trim();
+    const descripcion = document.getElementById('cat-descripcion').value.trim();
+    if (!nombre) {
+      mostrarAlerta('Datos incompletos', 'El nombre de la categoría es obligatorio.', 'error');
+      return;
+    }
+    const botonGuardar = overlay.querySelector('.modal-guardar');
+    try {
+      botonGuardar.disabled = true;
+      if (esEdicion) {
+        await peticion(`/categorias/${categoria.id_categoria}`, { method: 'PUT', body: JSON.stringify({ nombre, descripcion }) });
+      } else {
+        await peticion('/categorias', { method: 'POST', body: JSON.stringify({ nombre, descripcion }) });
+      }
+      overlay.classList.remove('visible');
+      mostrarAlerta(esEdicion ? 'Categoría actualizada' : 'Categoría creada', esEdicion ? 'Los cambios se guardaron correctamente.' : 'La categoría se creó correctamente.', 'exito');
+      cargarCategoriasAdmin();
+      refrescarSelectCategorias();
+    } catch (error) {
+      botonGuardar.disabled = false;
+      mostrarAlerta(esEdicion ? 'No se pudo actualizar' : 'No se pudo crear', error.message, 'error');
+    }
+  });
+}
+
+// Actualiza el select de categorías del formulario de artículos si está abierto,
+// para que no quede obsoleto tras crear, editar, activar, desactivar o eliminar.
+async function refrescarSelectCategorias() {
+  const select = document.getElementById('art-categoria');
+  if (!select) return;
+  try {
+    const categorias = await peticion('/categorias');
+    const seleccion = select.value;
+    select.innerHTML = categorias
+      .map((c) => `<option value="${c.id_categoria}">${esc(c.nombre)}</option>`)
+      .join('');
+    if (seleccion) select.value = seleccion;
+  } catch {
+    // Si falla la actualización, el select conserva los datos anteriores.
+  }
 }
 
 async function cargarPedidosAdmin() {
